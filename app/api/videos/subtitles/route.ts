@@ -5,7 +5,7 @@ import axios from 'axios';
 import protobuf from 'protobufjs';
 import { Buffer } from 'buffer';
 
-const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY!;
+const apiKey = process.env.YOUTUBE_API_KEY!;
 const youtubeClient = new youtube_v3.Youtube({ auth: apiKey });
 
 /** 將物件編碼成 base64 的 protobuf，用於 InnerTube API */
@@ -55,10 +55,7 @@ async function getDefaultSubtitleLanguage(
 
   // 優先尋找 preferredLang，否則取第一個
   const pick =
-    items.find(
-      (c: { snippet?: { language?: string } }) =>
-        c.snippet?.language === preferredLang
-    ) || items[0];
+    items.find(c => c.snippet?.language === preferredLang) || items[0];
   const { trackKind, language } = pick.snippet!;
   return { trackKind: trackKind || 'standard', language: language! };
 }
