@@ -11,22 +11,29 @@ export async function POST(req: Request) {
       );
     }
 
-    let rawSubtitles;
+    let rawSubtitles = null;
+    
+    // 1. 嘗試獲取手動字幕
+    console.log('Attempting to fetch manual subtitles...');
     try {
       const manualSubtitles = await getSubtitles({
         videoID: videoId,
         lang: 'en',
       });
 
-      if (!manualSubtitles || manualSubtitles.length === 0) {
-        console.log('Manual captions empty, trying auto-generated...');
-        throw new Error('No manual captions');
+      if (manualSubtitles && manualSubtitles.length > 0) {
+        console.log('Successfully fetched manual subtitles');
+        rawSubtitles = manualSubtitles;
+      } else {
+        console.log('No manual subtitles available');
       }
-
-      rawSubtitles = manualSubtitles;
     } catch (error) {
-      console.log('Falling back to auto-generated captions...');
+      console.log('Failed to fetch manual subtitles:', error);
+    }
 
+    // 2. 如果沒有手動字幕，嘗試獲取自動字幕
+    if (!rawSubtitles) {
+      console.log('Attempting to fetch auto-generated subtitles...');
       try {
         const autoSubtitles = await getSubtitles({
           videoID: videoId,
@@ -34,15 +41,20 @@ export async function POST(req: Request) {
           type: 'asr',
         });
 
-        if (!autoSubtitles || autoSubtitles.length === 0) {
-          throw new Error('No auto-generated captions available');
+        if (autoSubtitles && autoSubtitles.length > 0) {
+          console.log('Successfully fetched auto-generated subtitles');
+          rawSubtitles = autoSubtitles;
+        } else {
+          console.log('No auto-generated subtitles available');
         }
-
-        rawSubtitles = autoSubtitles;
-      } catch (secondError) {
-        console.error('Failed to get auto-generated captions:', secondError);
+      } catch (error) {
+        console.error('Failed to fetch auto-generated subtitles:', error);
         throw new Error('No subtitles available for this video');
       }
+    }
+
+    if (!rawSubtitles) {
+      throw new Error('No subtitles available for this video');
     }
 
     const formattedSubtitles = rawSubtitles.map(subtitle => ({
@@ -54,8 +66,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ subtitles: formattedSubtitles });
   } catch (error) {
     console.error('Error fetching subtitles:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to fetch subtitles' },
+      { 
+        error: 'Failed to fetch subtitles',
+        message: errorMessage,
+        details: `Tried both manual and auto-generated subtitles but failed. Error: ${errorMessage}`
+      },
       { status: 500 }
     );
   }
