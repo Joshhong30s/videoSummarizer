@@ -3,7 +3,7 @@ import { getVideoId } from '@/lib/utils/youtube';
 function parseISODuration(iso: string): number {
   const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
   if (!match) return 0;
-  const [, h, m, s] = match.map((v) => parseInt(v) || 0);
+  const [, h, m, s] = match.map(v => parseInt(v) || 0);
   return h * 3600 + m * 60 + s;
 }
 
@@ -29,7 +29,8 @@ async function getVideoInfo(videoUrl: string) {
     const snippet = video.snippet;
     const details = video.contentDetails;
 
-    const thumbnailUrl = snippet.thumbnails?.high?.url ||
+    const thumbnailUrl =
+      snippet.thumbnails?.high?.url ||
       `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 
     const duration = parseISODuration(details.duration);
@@ -71,7 +72,8 @@ export async function GET(request: Request) {
     console.error('Error fetching video info:', error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'Failed to fetch video info',
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch video info',
         details: error instanceof Error ? error.stack : undefined,
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
@@ -96,7 +98,8 @@ export async function POST(request: Request) {
     console.error('Error fetching video info:', error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'Failed to fetch video info',
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch video info',
         details: error instanceof Error ? error.stack : undefined,
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
