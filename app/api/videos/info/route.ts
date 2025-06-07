@@ -1,47 +1,50 @@
-import { NextRequest } from 'next/server';
-import ytdl from 'ytdl-core';
 import { getVideoId } from '@/lib/utils/youtube';
+
+function parseISODuration(iso: string): number {
+  const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return 0;
+  const [, h, m, s] = match.map((v) => parseInt(v) || 0);
+  return h * 3600 + m * 60 + s;
+}
 
 async function getVideoInfo(videoUrl: string) {
   try {
-    console.log('Fetching video info for:', videoUrl);
-    const info = await ytdl.getBasicInfo(videoUrl);
-    console.log('Video info received:', info.videoDetails.title);
+    const videoId = getVideoId(videoUrl);
+    const apiKey = process.env.YOUTUBE_API_KEY;
 
-    // Choose best quality thumbnail
-    const thumbnails = info.videoDetails.thumbnails;
-    let bestThumbnail = thumbnails[0];
-
-    // Find highest resolution thumbnail
-    for (const thumbnail of thumbnails) {
-      if (
-        !bestThumbnail ||
-        (thumbnail.width &&
-          bestThumbnail.width &&
-          thumbnail.width > bestThumbnail.width)
-      ) {
-        bestThumbnail = thumbnail;
-      }
+    if (!apiKey) {
+      throw new Error('Missing YOUTUBE_API_KEY');
     }
 
-    // Use maxresdefault if no high resolution thumbnail found
-    const thumbnailUrl =
-      bestThumbnail?.url ||
-      `https://img.youtube.com/vi/${info.videoDetails.videoId}/maxresdefault.jpg`;
+    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${apiKey}`;
+
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+
+    if (!res.ok || !data.items || data.items.length === 0) {
+      throw new Error('Video not found or API error');
+    }
+
+    const video = data.items[0];
+    const snippet = video.snippet;
+    const details = video.contentDetails;
+
+    const thumbnailUrl = snippet.thumbnails?.high?.url ||
+      `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+    const duration = parseISODuration(details.duration);
 
     return {
-      title: info.videoDetails.title,
-      description: info.videoDetails.description || '',
-      thumbnailUrl: thumbnailUrl,
-      duration: parseInt(info.videoDetails.lengthSeconds),
-      publishDate: info.videoDetails.publishDate,
+      title: snippet.title,
+      description: snippet.description || '',
+      thumbnailUrl,
+      duration,
+      publishDate: snippet.publishedAt,
     };
   } catch (error) {
-    console.error('Error fetching video info from ytdl:', {
+    console.error('Error fetching video info via YouTube API:', {
       error,
       url: videoUrl,
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
     });
     throw error;
   }
@@ -62,24 +65,16 @@ export async function GET(request: Request) {
     const videoInfo = await getVideoInfo(videoUrl);
 
     return new Response(JSON.stringify(videoInfo), {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error fetching video info:', error);
     return new Response(
       JSON.stringify({
-        error:
-          error instanceof Error ? error.message : 'Failed to fetch video info',
+        error: error instanceof Error ? error.message : 'Failed to fetch video info',
         details: error instanceof Error ? error.stack : undefined,
       }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }
@@ -95,24 +90,16 @@ export async function POST(request: Request) {
     const videoInfo = await getVideoInfo(url);
 
     return new Response(JSON.stringify(videoInfo), {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error fetching video info:', error);
     return new Response(
       JSON.stringify({
-        error:
-          error instanceof Error ? error.message : 'Failed to fetch video info',
+        error: error instanceof Error ? error.message : 'Failed to fetch video info',
         details: error instanceof Error ? error.stack : undefined,
       }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }
