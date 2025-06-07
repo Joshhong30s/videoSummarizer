@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YouTube Summarizer v2
 
-## Getting Started
+A Next.js application for summarizing YouTube videos, with highlights and saved history.
 
-First, run the development server:
+## Features
+
+- 📚 Video library with summaries
+- 🎯 Highlight important parts
+- 🌐 Dual language summaries (中文/English)
+- 📱 Mobile-first responsive design
+- ⚡ Real-time updates with Supabase
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Supabase account
+- YouTube Data API key
+- OpenAI API key
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory with:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+OPENAI_API_KEY=your_openai_api_key
+YOUTUBE_API_KEY=your_youtube_api_key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Database Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Create a new Supabase project
+2. Run the SQL script in `supabase/init.sql` in the SQL editor
+3. Get your project URL and anon key from the project settings
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Installation
 
-## Learn More
+```bash
+# Install dependencies
+npm install
 
-To learn more about Next.js, take a look at the following resources:
+# Run development server
+npm run dev
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Build for production
+npm run build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Start production server
+npm start
+```
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+├── app/                  # Next.js app router
+│   ├── components/       # React components
+│   │   ├── layout/      # Layout components
+│   │   ├── pages/       # Page-specific components
+│   │   └── video/       # Video-related components
+│   └── ...              # Pages and layouts
+├── lib/                  # Shared utilities
+│   ├── hooks/           # Custom React hooks
+│   ├── supabase.ts      # Supabase client
+│   └── types.ts         # TypeScript types
+├── public/              # Static files
+└── supabase/            # Supabase configurations
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Technology Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Database**: Supabase (PostgreSQL)
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI
+- **State Management**: React Hooks
+- **API Integration**: YouTube Data API, OpenAI API
+
+## License
+
+MIT
