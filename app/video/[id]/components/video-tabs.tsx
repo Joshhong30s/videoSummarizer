@@ -1,7 +1,7 @@
 'use client';
 
 import * as Tabs from '@radix-ui/react-tabs';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { VideoDetail } from '@/lib/types';
 import { SubtitlesView } from './subtitles-view';
 import { SummaryView } from './summary-view';
@@ -22,14 +22,44 @@ export function VideoTabs({
   const { processVideo, loading } = useVideoProcessing();
   const [hasTriggeredProcess, setHasTriggeredProcess] = useState(false);
 
+  // useEffect(() => {
+  //   // Trigger processing when video status is pending and has no subtitles
+  //   if (
+  //     !hasTriggeredProcess &&
+  //     video.status === 'pending' &&
+  //     (!video.summary || !video.summary.subtitles)
+  //   ) {
+  //     setHasTriggeredProcess(true); // 防止重複處理
+  //     processVideo(video.id, video.youtube_id)
+  //       .then(() => {
+  //         console.log('Video processing completed');
+  //         onVideoUpdate?.();
+  //       })
+  //       .catch(error => {
+  //         console.error('Failed to process video:', error);
+  //         setHasTriggeredProcess(false); // 如果處理失敗，允許重試
+  //       });
+  //   }
+  // }, [
+  //   video.id,
+  //   video.status,
+  //   video.youtube_id,
+  //   video.summary,
+  //   processVideo,
+  //   onVideoUpdate,
+  //   hasTriggeredProcess,
+  // ]);
+
+  const hasProcessedRef = useRef(false);
+
   useEffect(() => {
-    // Trigger processing when video status is pending and has no subtitles
     if (
-      !hasTriggeredProcess &&
+      !hasProcessedRef.current &&
       video.status === 'pending' &&
       (!video.summary || !video.summary.subtitles)
     ) {
-      setHasTriggeredProcess(true); // 防止重複處理
+      hasProcessedRef.current = true;
+
       processVideo(video.id, video.youtube_id)
         .then(() => {
           console.log('Video processing completed');
@@ -37,17 +67,16 @@ export function VideoTabs({
         })
         .catch(error => {
           console.error('Failed to process video:', error);
-          setHasTriggeredProcess(false); // 如果處理失敗，允許重試
+          hasProcessedRef.current = false; // ✅ 失敗才重置
         });
     }
   }, [
-    video.id,
-    video.status,
-    video.youtube_id,
-    video.summary,
-    processVideo,
-    onVideoUpdate,
-    hasTriggeredProcess,
+    video.id, // ✅ primitive
+    video.status, // ✅ primitive
+    video.youtube_id, // ✅ primitive
+    video.summary?.subtitles, // ✅ optional chain to avoid object dependency
+    onVideoUpdate, // ✅ function reference
+    processVideo, // ✅ function reference
   ]);
 
   return (

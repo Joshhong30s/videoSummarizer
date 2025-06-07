@@ -35,11 +35,13 @@
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "5.3.3",
-    "youtube-captions-scraper": "^2.0.3",
+    "youtube-captions-scraper": "github:Joshhong30s/youtube-captions-scraper",
     "ytdl-core": "npm:@distube/ytdl-core@^4.16.11",
     "zod": "^3.25.51"
   },
   "devDependencies": {
+    "@types/he": "^1.2.3",
+    "@types/lodash": "^4.17.17",
     "@types/node": "^20.11.19",
     "@types/react": "^18.2.57",
     "@types/react-dom": "^18.2.19",
