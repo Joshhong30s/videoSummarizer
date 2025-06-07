@@ -20,7 +20,7 @@ const fetchData = async function fetchData(url: string) {
   return data;
 };
 
-type SubtitleLine = {
+export type SubtitleLine = {
   start: string;
   dur: string;
   text: string;
@@ -29,9 +29,11 @@ type SubtitleLine = {
 export async function getSubtitles({
   videoID,
   lang = 'en',
+  type = 'any',
 }: {
   videoID: string;
   lang?: string;
+  type?: 'manual' | 'asr' | 'any';
 }): Promise<SubtitleLine[]> {
   const data = await fetchData(`https://youtube.com/watch?v=${videoID}`);
 
@@ -42,20 +44,24 @@ export async function getSubtitles({
   const regex = /"captionTracks":(\[.*?\])/;
   const matchResult = regex.exec(data);
   if (!matchResult) {
-    throw new Error(`Could not extract captionTracks from video data.`);
+    throw new Error(`Could not extract captionTracks`);
   }
 
-  const [match] = matchResult;
-  const { captionTracks } = JSON.parse(`{${match}}`);
+  const { captionTracks } = JSON.parse(`{${matchResult[0]}}`);
 
-  // ✅ 用優先順序找最佳字幕
-  const subtitle =
-    find(captionTracks, { vssId: `a.${lang}` }) || // 自動字幕
-    find(captionTracks, { vssId: `.${lang}` }) || // 手動字幕
-    find(captionTracks, ({ vssId }) => vssId?.includes(`.${lang}`)); // 其他變形
+  let subtitle;
+  if (type === 'manual') {
+    subtitle = find(captionTracks, { vssId: `.${lang}` });
+  } else if (type === 'asr') {
+    subtitle = find(captionTracks, { vssId: `a.${lang}` });
+  } else {
+    subtitle =
+      find(captionTracks, { vssId: `a.${lang}` }) ||
+      find(captionTracks, { vssId: `.${lang}` });
+  }
 
   if (!subtitle?.baseUrl) {
-    throw new Error(`Could not find ${lang} captions for ${videoID}`);
+    throw new Error(`Could not find ${type} captions for ${videoID}`);
   }
 
   const transcript = await fetchData(subtitle.baseUrl);
@@ -72,7 +78,7 @@ export async function getSubtitles({
       const text = striptags(decodedText);
 
       if (!start || !dur) {
-        throw new Error('Failed to parse start or duration from line.');
+        throw new Error('Failed to parse subtitle line.');
       }
 
       return { start, dur, text };

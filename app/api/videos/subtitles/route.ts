@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSubtitles } from '@/lib/youtube-captions-scraper';
+import { getSubtitles, SubtitleLine } from '@/lib/youtube-captions-scraper';
 
 export async function POST(req: Request) {
   try {
@@ -14,14 +14,39 @@ export async function POST(req: Request) {
 
     console.log(`🎯 Fetching subtitles for video ID: ${videoId}`);
 
-    // 🔁 一次性取得最佳字幕（自動或手動）
-    const rawSubtitles = await getSubtitles({ videoID: videoId, lang: 'en' });
+    let rawSubtitles: SubtitleLine[] | null = null;
+
+    // Step 1: Try manual subtitles first
+    try {
+      console.log('🔍 Trying manual subtitles...');
+      rawSubtitles = await getSubtitles({
+        videoID: videoId,
+        lang: 'en',
+        type: 'manual',
+      });
+    } catch (e) {
+      console.warn('⚠️ Manual subtitles not found.');
+    }
+
+    // Step 2: Fallback to auto subtitles if manual failed
+    if (!rawSubtitles) {
+      try {
+        console.log('🔁 Trying auto-generated subtitles...');
+        rawSubtitles = await getSubtitles({
+          videoID: videoId,
+          lang: 'en',
+          type: 'asr',
+        });
+      } catch (e) {
+        console.warn('❌ Auto-generated subtitles also not found.');
+      }
+    }
 
     if (!rawSubtitles || rawSubtitles.length === 0) {
       return NextResponse.json(
         {
           error: 'No subtitles available for this video',
-          message: 'No matching subtitle track found (auto or manual).',
+          message: 'Neither manual nor auto-generated subtitles were found.',
         },
         { status: 404 }
       );
