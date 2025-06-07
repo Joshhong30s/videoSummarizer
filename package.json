@@ -10,6 +10,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@distube/ytdl-core": "^4.16.11",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-slider": "^1.1.2",
     "@radix-ui/react-switch": "^1.0.3",
@@ -35,7 +36,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "5.3.3",
     "youtube-captions-scraper": "^2.0.3",
-    "ytdl-core": "^4.11.5",
+    "ytdl-core": "npm:@distube/ytdl-core@^4.16.11",
     "zod": "^3.25.51"
   },
   "devDependencies": {

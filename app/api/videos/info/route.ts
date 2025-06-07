@@ -1,18 +1,19 @@
 import { NextRequest } from 'next/server';
-import ytdl from 'ytdl-core';
 import { getVideoId } from '@/lib/utils/youtube';
 
 async function getVideoInfo(videoUrl: string) {
   try {
     console.log('Fetching video info for:', videoUrl);
+
+    // dynamic import to avoid server-side issues with ytdl-core
+    const ytdl = require('@distube/ytdl-core');
+
     const info = await ytdl.getBasicInfo(videoUrl);
     console.log('Video info received:', info.videoDetails.title);
 
-    // Choose best quality thumbnail
     const thumbnails = info.videoDetails.thumbnails;
     let bestThumbnail = thumbnails[0];
 
-    // Find highest resolution thumbnail
     for (const thumbnail of thumbnails) {
       if (
         !bestThumbnail ||
@@ -24,7 +25,6 @@ async function getVideoInfo(videoUrl: string) {
       }
     }
 
-    // Use maxresdefault if no high resolution thumbnail found
     const thumbnailUrl =
       bestThumbnail?.url ||
       `https://img.youtube.com/vi/${info.videoDetails.videoId}/maxresdefault.jpg`;
