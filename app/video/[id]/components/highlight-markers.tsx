@@ -45,7 +45,7 @@ export function HighlightMarkers() {
                   : 'rgba(59, 130, 246, 0.8)', // Default blue color
                 borderRadius: '2px',
               }}
-              title={highlight.text}
+              title={highlight.content}
               className="cursor-pointer hover:brightness-110 transition-all"
             />
           );

@@ -127,7 +127,7 @@ export function HighlightsDrawer({
                       </div>
                     </div>
 
-                    <p className="text-sm text-gray-700">{highlight.text}</p>
+                    <p className="text-sm text-gray-700">{highlight.content}</p>
 
                     {editingHighlight === highlight.id ? (
                       <div className="mt-2">
