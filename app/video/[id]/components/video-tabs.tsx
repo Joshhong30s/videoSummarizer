@@ -1,7 +1,7 @@
 'use client';
 
 import * as Tabs from '@radix-ui/react-tabs';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { VideoDetail } from '@/lib/types';
 import { SubtitlesView } from './subtitles-view';
 import { SummaryView } from './summary-view';
@@ -20,13 +20,16 @@ export function VideoTabs({
   className = '',
 }: VideoTabsProps) {
   const { processVideo, loading } = useVideoProcessing();
+  const [hasTriggeredProcess, setHasTriggeredProcess] = useState(false);
 
   useEffect(() => {
     // Trigger processing when video status is pending and has no subtitles
     if (
+      !hasTriggeredProcess &&
       video.status === 'pending' &&
       (!video.summary || !video.summary.subtitles)
     ) {
+      setHasTriggeredProcess(true); // 防止重複處理
       processVideo(video.id, video.youtube_id)
         .then(() => {
           console.log('Video processing completed');
@@ -34,6 +37,7 @@ export function VideoTabs({
         })
         .catch(error => {
           console.error('Failed to process video:', error);
+          setHasTriggeredProcess(false); // 如果處理失敗，允許重試
         });
     }
   }, [
@@ -43,6 +47,7 @@ export function VideoTabs({
     video.summary,
     processVideo,
     onVideoUpdate,
+    hasTriggeredProcess,
   ]);
 
   return (
