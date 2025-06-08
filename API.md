@@ -9,6 +9,7 @@ POST /api/videos
 ```
 
 請求體:
+
 ```json
 {
   "url": "https://www.youtube.com/watch?v=xxxxx"
@@ -34,6 +35,7 @@ PATCH /api/videos/{id}/subtitles
 ```
 
 請求體:
+
 ```json
 {
   "subtitles": [
@@ -55,6 +57,7 @@ POST /api/videos/{id}/generate-summary
 ```
 
 請求體:
+
 ```json
 {
   "subtitles": [...],
@@ -71,6 +74,7 @@ POST /api/videos/{id}/translate
 ```
 
 請求體:
+
 ```json
 {
   "subtitles": [...]
@@ -86,6 +90,7 @@ POST /api/videos/{id}/highlights
 ```
 
 請求體:
+
 ```json
 {
   "video_id": "uuid",
@@ -124,6 +129,7 @@ GET /api/search
 ```
 
 查詢參數:
+
 ```
 q: 搜尋關鍵字
 type: "subtitle" | "highlight" | "note"
@@ -141,51 +147,3 @@ category: "分類 ID"
   "status": 400
 }
 ```
-
-通用狀態碼：
-- 200: 成功
-- 400: 請求錯誤
-- 401: 未授權
-- 404: 資源不存在
-- 500: 伺服器錯誤
-
-## 資料庫結構
-
-### videos 表
-```sql
-CREATE TABLE videos (
-  id UUID PRIMARY KEY,
-  youtube_id TEXT NOT NULL,
-  title TEXT NOT NULL,
-  thumbnail_url TEXT NOT NULL,
-  status TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE
-);
-```
-
-### highlights 表
-```sql
-CREATE TABLE highlights (
-  id UUID PRIMARY KEY,
-  video_id UUID REFERENCES videos(id),
-  content TEXT NOT NULL,
-  start_offset INTEGER NOT NULL,
-  end_offset INTEGER NOT NULL,
-  type TEXT NOT NULL,
-  color TEXT NOT NULL,
-  note TEXT,
-  created_at TIMESTAMP WITH TIME ZONE
-);
-```
-
-### summaries 表
-```sql
-CREATE TABLE summaries (
-  id UUID PRIMARY KEY,
-  video_id UUID REFERENCES videos(id),
-  zh_summary TEXT,
-  en_summary TEXT,
-  classification TEXT,
-  subtitles JSONB NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE
-);
