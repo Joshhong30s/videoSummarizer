@@ -19,6 +19,7 @@ export function useSubtitleTranslation({
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [isTranslating, setIsTranslating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showTranslation, setShowTranslation] = useState(false);
 
   useEffect(() => {
     async function loadExistingTranslations() {
@@ -44,20 +45,24 @@ export function useSubtitleTranslation({
       setIsTranslating(true);
       setError(null);
 
-      const response = await fetch(`/api/videos/${videoId}/translate`, {
+      const translateResponse = await fetch(`/api/videos/${videoId}/translate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subtitles }),
       });
 
-      if (!response.ok) {
+      if (!translateResponse.ok) {
         throw new Error('Failed to translate subtitles');
       }
 
-      const { translations } = await response.json();
-      setTranslations(translations);
+      const loadResponse = await fetch(`/api/videos/${videoId}/translations`);
+      if (!loadResponse.ok) {
+        throw new Error('Failed to load translations');
+      }
+
+      const { translations: newTranslations } = await loadResponse.json();
+      setTranslations(newTranslations);
+      setShowTranslation(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Translation failed');
       console.error('Translation error:', err);
@@ -165,5 +170,7 @@ export function useSubtitleTranslation({
     getTranslation,
     importTranslations,
     exportTranslations,
+    showTranslation,
+    setShowTranslation
   };
 }

@@ -21,7 +21,6 @@ interface TranslationExport {
 }
 
 export function SubtitlesView({ video }: SubtitlesViewProps) {
-  const [showTranslation, setShowTranslation] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [importText, setImportText] = useState('');
@@ -45,6 +44,8 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
     getTranslation,
     importTranslations,
     exportTranslations,
+    showTranslation,
+    setShowTranslation,
   } = useSubtitleTranslation({
     videoId: video.id,
     subtitles: filteredSubtitles,
@@ -69,11 +70,10 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
           end_offset: endOffset,
           content: subtitle.text,
           type: 'subtitle',
-          color: '#FFD700', // Default yellow
+          color: '#FFD700',
         });
       } catch (err) {
         console.error('Detailed error adding highlight:', err);
-        // TODO: Add toast notification for error
       }
     },
     [addHighlight, video.id]
@@ -205,9 +205,21 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
             className="w-full"
           />
         </div>
+
+        {lastCopiedButton === 'plain' && (
+          <div className="relative bottom-0 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-800/95 text-white text-sm rounded shadow-lg backdrop-blur-sm animate-in fade-in duration-300 text-nowrap z-50 w-24 text-center">
+            Sub Copied!
+          </div>
+        )}
+
+        {lastCopiedButton === 'timed' && (
+          <div className="relative bottom-0 left-1/3 -translate-x-1/2 px-2 py-1 bg-gray-800/95 text-white text-sm rounded shadow-lg backdrop-blur-sm animate-in fade-in duration-300 text-nowrap z-50 w-52 text-center">
+            Sub with TimeStamp Copied!
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center justify-between pb-4 border-b">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b">
         <div className="flex items-center gap-4">
           <input
             type="checkbox"
@@ -221,50 +233,45 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
           </label>
         </div>
 
-        <div className="flex items-center gap-2 relative">
+        <div className="flex items-center justify-end gap-2 relative overflow-x-auto w-full sm:w-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           <Button
             variant="ghost"
             onClick={() => setShowEditModal(true)}
-            className="text-gray-600 hover:text-blue-700"
+            className="text-gray-600 hover:text-blue-700 whitespace-nowrap"
             size="sm"
           >
             <Plus className="h-4 w-4 mr-1" />
-            Edit Subtitles
+            <span className="hidden sm:inline">Edit Subtitles</span>
+            <span className="sm:hidden">Edit</span>
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            title="Copy Plain Text"
-            onClick={() => handleCopyWithFormat('plain', 'original')}
-            className="p-2 text-gray-600 hover:text-blue-700"
-          >
-            <Copy className="h-4 w-4" />
-          </Button>
-          {lastCopiedButton === 'plain' && (
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-gray-800 text-white rounded-md shadow-lg animate-in fade-in duration-200 text-nowrap">
-              Sub Copied!
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            title="Copy Text with Timestamps"
-            onClick={() => handleCopyWithFormat('timed', 'original')}
-            className="p-2 text-gray-600 hover:text-blue-700"
-          >
-            <FileText className="h-4 w-4" />
-          </Button>
-          {lastCopiedButton === 'timed' && (
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-gray-800 text-white rounded-md shadow-lg animate-in fade-in duration-200 text-nowrap">
-              Sub with TimeStamp Copied!
-            </div>
-          )}
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              title="Copy Plain Text"
+              onClick={() => handleCopyWithFormat('plain', 'original')}
+              className="p-2 min-w-[40px] justify-center text-gray-600 hover:text-blue-700"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              title="Copy Text with Timestamps"
+              onClick={() => handleCopyWithFormat('timed', 'original')}
+              className="p-2 min-w-[40px] justify-center text-gray-600 hover:text-blue-700"
+            >
+              <FileText className="h-4 w-4" />
+            </Button>
+          </div>
           <Button
             variant="ghost"
             size="sm"
             title="Import Translation"
             onClick={() => setShowImportModal(true)}
-            className="p-2 text-gray-600 hover:text-blue-700"
+            className="p-2 min-w-[40px] justify-center text-gray-600 hover:text-blue-700"
           >
             <Upload className="h-4 w-4" />
           </Button>
@@ -277,19 +284,22 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
               inline-flex items-center gap-2 px-4 py-2 
               text-sm font-medium text-gray-700 hover:text-blue-700
               bg-white border border-gray-300 rounded-md
-              hover:bg-gray-50 
+              hover:bg-gray-50 whitespace-nowrap
               disabled:opacity-50 disabled:cursor-not-allowed
+              min-w-[40px] sm:min-w-fit
             "
           >
             {isTranslating ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Translating...
+                <span className="hidden sm:inline">Translating...</span>
               </>
             ) : (
               <>
                 <Languages className="h-4 w-4" />
-                Translate ({subtitleCount})
+                <span className="hidden sm:inline ml-1">
+                  Translate ({subtitleCount})
+                </span>
               </>
             )}
           </Button>

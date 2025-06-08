@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { useVideos } from '@/lib/contexts/videos-context';
 
 export function BackButton() {
+  const { refetch } = useVideos();
   return (
     <Link
       href="/"
@@ -17,6 +19,9 @@ export function BackButton() {
         sm:static sm:bg-transparent sm:border-none sm:py-2 sm:px-0
         sm:w-fit sm:hover:bg-gray-50 sm:rounded-lg
       "
+      onClick={() => {
+        refetch();
+      }}
     >
       <ArrowLeft className="w-5 h-5" />
       <span className="text-sm font-medium">Back to Main Page</span>
