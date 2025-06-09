@@ -24,9 +24,21 @@ GET /api/videos/{id}
 
 ### 獲取字幕
 
+從 YouTube 擷取指定影片的字幕。
+
 ```http
-GET /api/videos/{id}/subtitles
+POST /api/videos/subtitles
 ```
+
+請求體:
+
+```json
+{
+  "videoId": "xxxxx"
+}
+```
+
+成功時回傳 `{ subtitles: [...] }`。
 
 ### 更新字幕
 
@@ -47,6 +59,8 @@ PATCH /api/videos/{id}/subtitles
   ]
 }
 ```
+
+此端點會將字幕儲存至資料庫，並與現有字幕合併。
 
 ## 摘要 API
 
