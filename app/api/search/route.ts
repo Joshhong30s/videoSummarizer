@@ -108,9 +108,14 @@ function highlightMatchedText(text: string | null, query: string): string {
 
   let result = text;
   searchTerms.forEach(term => {
-    const regex = new RegExp(`(${term})`, 'gi');
+    const escaped = escapeRegExp(term);
+    const regex = new RegExp(`(${escaped})`, 'gi');
     result = result.replace(regex, '<mark>$1</mark>');
   });
 
   return result;
+}
+
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
