@@ -1,12 +1,40 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
+import { GUEST_USER_ID } from '@/lib/supabase';
 
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { error: highlightsError } = await supabase
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id || GUEST_USER_ID;
+
+    console.log('Deleting video:', params.id, 'for user:', userId);
+
+    // 驗證視頻所有權
+    const { data: video, error: videoCheckError } = await supabaseAdmin
+      .from('videos')
+      .select('user_id')
+      .eq('id', params.id)
+      .single();
+
+    if (videoCheckError) {
+      console.error('Error checking video ownership:', videoCheckError);
+      throw videoCheckError;
+    }
+
+    if (!video || video.user_id !== userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized to delete this video' },
+        { status: 403 }
+      );
+    }
+
+    // 刪除相關數據
+    const { error: highlightsError } = await supabaseAdmin
       .from('highlights')
       .delete()
       .eq('video_id', params.id);
@@ -16,7 +44,7 @@ export async function DELETE(
       throw highlightsError;
     }
 
-    const { error: summaryError } = await supabase
+    const { error: summaryError } = await supabaseAdmin
       .from('summaries')
       .delete()
       .eq('video_id', params.id);
@@ -26,16 +54,18 @@ export async function DELETE(
       throw summaryError;
     }
 
-    const { error: videoError } = await supabase
+    const { error: videoError } = await supabaseAdmin
       .from('videos')
       .delete()
-      .eq('id', params.id);
+      .eq('id', params.id)
+      .eq('user_id', userId); // 再次確認用戶權限
 
     if (videoError) {
       console.error('Error deleting video:', videoError);
       throw videoError;
     }
 
+    console.log('Successfully deleted video and related data');
     return NextResponse.json(
       { message: 'Video and related data deleted successfully' },
       { status: 200 }
@@ -57,20 +87,45 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id || GUEST_USER_ID;
     const updates = await request.json();
 
-    const { data, error } = await supabase
+    // 驗證視頻所有權
+    const { data: video, error: videoCheckError } = await supabaseAdmin
+      .from('videos')
+      .select('user_id')
+      .eq('id', params.id)
+      .single();
+
+    if (videoCheckError) {
+      console.error('Error checking video ownership:', videoCheckError);
+      throw videoCheckError;
+    }
+
+    if (!video || video.user_id !== userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized to update this video' },
+        { status: 403 }
+      );
+    }
+
+    const { data, error } = await supabaseAdmin
       .from('videos')
       .update(updates)
       .eq('id', params.id)
+      .eq('user_id', userId) // 再次確認用戶權限
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating video:', error);
+      throw error;
+    }
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error updating video:', error);
+    console.error('Error in update operation:', error);
     return NextResponse.json(
       {
         message: 'Failed to update video',

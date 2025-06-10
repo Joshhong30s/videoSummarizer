@@ -7,7 +7,9 @@ import {
   useEffect,
   useCallback,
 } from 'react';
+import { useSession } from 'next-auth/react';
 import { Category } from '@/lib/types/database';
+import { GUEST_USER_ID } from '@/lib/supabase';
 
 interface CategoriesContextType {
   categories: Category[];
@@ -45,10 +47,12 @@ export function CategoriesProvider({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [version, setVersion] = useState(0);
+  const { data: session } = useSession();
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await fetch('/api/categories');
+      const userId = session?.user?.id || GUEST_USER_ID;
+      const response = await fetch(`/api/categories?userId=${userId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch categories');
       }
@@ -61,7 +65,7 @@ export function CategoriesProvider({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [session?.user?.id]);
 
   useEffect(() => {
     fetchCategories();
@@ -73,6 +77,7 @@ export function CategoriesProvider({
 
   const addCategory = async (name: string, color?: string) => {
     try {
+      console.log('Adding category:', { name, color });
       const response = await fetch('/api/categories', {
         method: 'POST',
         headers: {
@@ -97,6 +102,7 @@ export function CategoriesProvider({
 
   const updateCategory = async (id: string, updates: Partial<Category>) => {
     try {
+      console.log('Updating category:', { id, updates });
       const response = await fetch('/api/categories', {
         method: 'PATCH',
         headers: {
@@ -121,6 +127,7 @@ export function CategoriesProvider({
 
   const deleteCategory = async (id: string) => {
     try {
+      console.log('Deleting category:', id);
       const response = await fetch('/api/categories', {
         method: 'DELETE',
         headers: {

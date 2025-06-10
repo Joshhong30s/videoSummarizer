@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useCategories } from '@/lib/hooks/use-categories';
 import { Button } from '@/app/components/ui/button';
-import { Plus, Save, X, Edit2 } from 'lucide-react';
+import { Plus, Save, X, Edit2, Loader2 } from 'lucide-react';
 import { Category } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -15,9 +15,10 @@ interface CategoryFormData {
 interface CategoryEditorProps {
   onSave: () => Promise<void>;
   onCancel: () => void;
+  isUpdating?: boolean;
 }
 
-export function CategoryEditor({ onSave, onCancel }: CategoryEditorProps) {
+export function CategoryEditor({ onSave, onCancel, isUpdating = false }: CategoryEditorProps) {
   const {
     categories,
     loading,
@@ -175,6 +176,7 @@ export function CategoryEditor({ onSave, onCancel }: CategoryEditorProps) {
                     type="button"
                     onClick={() => startEdit(category)}
                     className="rounded-full p-1 hover:bg-white/20"
+                    disabled={isUpdating}
                   >
                     <Edit2 className="h-3 w-3" />
                   </button>
@@ -182,6 +184,7 @@ export function CategoryEditor({ onSave, onCancel }: CategoryEditorProps) {
                     type="button"
                     onClick={() => handleDelete(category.id)}
                     className="rounded-full p-1 hover:bg-white/20"
+                    disabled={isUpdating}
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -217,7 +220,7 @@ export function CategoryEditor({ onSave, onCancel }: CategoryEditorProps) {
               variant="ghost"
               className="h-6 w-6 p-0"
               onClick={handleSubmit}
-              disabled={!formData.name}
+              disabled={!formData.name || isUpdating}
             >
               <Save className="h-4 w-4" />
             </Button>
@@ -230,6 +233,7 @@ export function CategoryEditor({ onSave, onCancel }: CategoryEditorProps) {
                 setIsAdding(false);
                 setFormData({ name: '', color: '#2563eb' });
               }}
+              disabled={isUpdating}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -241,6 +245,7 @@ export function CategoryEditor({ onSave, onCancel }: CategoryEditorProps) {
             size="sm"
             onClick={() => setIsAdding(true)}
             className="gap-1 text-sm"
+            disabled={isUpdating}
           >
             <Plus className="h-4 w-4" />
             Add Category
@@ -249,10 +254,19 @@ export function CategoryEditor({ onSave, onCancel }: CategoryEditorProps) {
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button variant="ghost" onClick={onCancel}>
+        <Button variant="ghost" onClick={onCancel} disabled={isUpdating}>
           Cancel
         </Button>
-        <Button onClick={onSave}>Done</Button>
+        <Button onClick={onSave} disabled={isUpdating}>
+          {isUpdating ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Updating...
+            </>
+          ) : (
+            'Done'
+          )}
+        </Button>
       </div>
     </div>
   );

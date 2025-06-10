@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
+import { GUEST_USER_ID } from '@/lib/supabase';
 import type { SubtitleEntry } from '@/lib/types';
 import type { Database } from '@/lib/types/database';
 
@@ -16,6 +19,28 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id || GUEST_USER_ID;
+
+    // 驗證視頻所有權
+    const { data: video, error: videoCheckError } = await supabaseAdmin
+      .from('videos')
+      .select('user_id')
+      .eq('id', params.id)
+      .single();
+
+    if (videoCheckError) {
+      console.error('Error checking video ownership:', videoCheckError);
+      throw videoCheckError;
+    }
+
+    if (!video || video.user_id !== userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized to generate summary for this video' },
+        { status: 403 }
+      );
+    }
+
     const { subtitles, model } =
       (await request.json()) as GenerateSummaryPayload;
 
@@ -45,7 +70,7 @@ export async function POST(
           {
             method: 'POST',
             headers: {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+              Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -64,7 +89,7 @@ export async function POST(
                       : `請以繁體中文摘要以下影片內容，著重整理主要重點與關鍵資訊，嚴格使用繁體中文詞彙，使用 Markdown 結構輸出重點整理:\n\n${text}\n\nSummary:`,
                 },
               ],
-              max_tokens: 1500, // 可以視情況調整
+              max_tokens: 1500,
               temperature: 0.5,
             }),
           }
@@ -82,7 +107,7 @@ export async function POST(
         return data.choices[0].message.content || '';
       } else {
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GOOGLESTUDIO_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${process.env.GOOGLESTUDIO_API_KEY}`,
           {
             method: 'POST',
             headers: {
@@ -101,6 +126,10 @@ export async function POST(
                   ],
                 },
               ],
+              generationConfig: {
+                thinkingConfig: { thinkingBudget: 256 },
+                maxOutputTokens: 2000,
+              },
             }),
           }
         );
@@ -136,9 +165,10 @@ export async function POST(
       subtitles: subtitles,
       classification: null,
       created_at: new Date().toISOString(),
+      user_id: userId, // 添加 user_id
     };
 
-    const { error: insertError } = await supabase
+    const { error: insertError } = await supabaseAdmin
       .from('summaries')
       .upsert(summaryData);
 
@@ -147,10 +177,11 @@ export async function POST(
       throw new Error(`Failed to save summary: ${insertError.message}`);
     }
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('videos')
       .update({ status: 'summarized' })
-      .eq('id', params.id);
+      .eq('id', params.id)
+      .eq('user_id', userId); // 確保只更新用戶自己的視頻
 
     if (updateError) {
       throw new Error(`Failed to update video status: ${updateError.message}`);

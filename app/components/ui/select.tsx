@@ -20,7 +20,7 @@ export interface SelectProps {
   placeholder?: string;
   className?: string;
   allowManage?: boolean;
-  onCategoriesChange?: () => void;
+  onCategoriesChange?: () => Promise<void>;
 }
 
 export function Select({
@@ -34,6 +34,7 @@ export function Select({
 }: SelectProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [showManageModal, setShowManageModal] = React.useState(false);
+  const [isUpdating, setIsUpdating] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Handle clicking outside to close dropdown
@@ -66,12 +67,16 @@ export function Select({
   };
 
   const handleSaveCategories = async () => {
+    if (!onCategoriesChange) return;
+    
     try {
+      setIsUpdating(true);
+      await onCategoriesChange();
       setShowManageModal(false);
-      onCategoriesChange?.();
-      return Promise.resolve();
     } catch (error) {
-      return Promise.reject(error);
+      console.error('Failed to update categories:', error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -139,6 +144,7 @@ export function Select({
                     setShowManageModal(true);
                   }}
                   className="h-7 px-2 text-sm hover:bg-gray-200 transition-colors"
+                  disabled={isUpdating}
                 >
                   <Settings className="h-3.5 w-3.5 mr-1.5" />
                   Manage
@@ -199,6 +205,7 @@ export function Select({
             <CategoryEditor
               onSave={handleSaveCategories}
               onCancel={() => setShowManageModal(false)}
+              isUpdating={isUpdating}
             />
           </div>
         </Modal>

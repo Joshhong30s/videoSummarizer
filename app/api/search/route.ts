@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
+import { GUEST_USER_ID } from '@/lib/supabase';
 import { z } from 'zod';
 import { ContentType, ALL_CONTENT_TYPES } from '@/lib/types/search';
 
@@ -34,6 +37,9 @@ interface SearchResponseItem {
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id || GUEST_USER_ID;
+
     const body = await request.json();
     const params = searchParamsSchema.parse(body);
 
@@ -41,7 +47,7 @@ export async function POST(request: Request) {
       ? ALL_CONTENT_TYPES
       : params.contentTypes;
 
-    const { data, error } = await supabase.rpc('search_video_content', {
+    const { data, error } = await supabaseAdmin.rpc('search_video_content', {
       search_query: params.query,
       content_types:
         effectiveContentTypes.length > 0
@@ -50,6 +56,7 @@ export async function POST(request: Request) {
       category_ids: params.categoryIds?.map(String),
       start_time: params.timeRange?.start,
       end_time: params.timeRange?.end,
+      user_id: userId, // 添加用戶 ID 作為搜索條件
     });
 
     if (error) {

@@ -22,7 +22,7 @@ export function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [showAddVideoModal, setShowAddVideoModal] = useState(false);
   const { categories } = useCategories();
-  const { videos } = useVideos();
+  const { videos, isLoading: videosLoading } = useVideos();
   const {
     query,
     setQuery,
@@ -35,7 +35,7 @@ export function HomePage() {
     sort,
     setSort,
     results,
-    loading,
+    loading: searchLoading,
     total,
     hasMore,
     loadMore,
@@ -50,10 +50,7 @@ export function HomePage() {
   const showSearchResults = query.length > 0;
 
   // Helper function to check if date is within range
-  const isWithinRange = (
-    dateStr: string | undefined,
-    range: string
-  ): boolean => {
+  const isWithinRange = (dateStr: string | undefined, range: string): boolean => {
     if (!dateStr) return false;
     const date = new Date(dateStr);
     const now = new Date();
@@ -130,14 +127,14 @@ export function HomePage() {
             {/* Search Results Header */}
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-medium text-gray-900">
-                {loading && !results.length
+                {searchLoading && !results.length
                   ? 'Searching...'
                   : `Found ${total} results`}
               </h2>
             </div>
 
             {/* Loading State */}
-            {loading && !results.length ? (
+            {searchLoading && !results.length ? (
               <SearchResultSkeletonList />
             ) : (
               <>
@@ -156,10 +153,10 @@ export function HomePage() {
                   <div className="mt-8 flex justify-center">
                     <button
                       onClick={loadMore}
-                      disabled={loading}
+                      disabled={searchLoading}
                       className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
-                      {loading ? (
+                      {searchLoading ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Loading...
@@ -226,11 +223,17 @@ export function HomePage() {
                 </div>
               </div>
             </div>
-            <VideoCardGrid>
-              {filteredVideos.map(video => (
-                <ClientVideoCard key={video.id} video={video} />
-              ))}
-            </VideoCardGrid>
+            {videosLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              </div>
+            ) : (
+              <VideoCardGrid>
+                {filteredVideos.map(video => (
+                  <ClientVideoCard key={video.id} video={video} />
+                ))}
+              </VideoCardGrid>
+            )}
           </div>
         )}
         <FAB onClick={() => setShowAddVideoModal(true)} label="Add new video" />

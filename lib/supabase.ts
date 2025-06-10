@@ -1,27 +1,7 @@
-// import { createClient } from "@supabase/supabase-js";
-
-// if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-//   throw new Error("Missing env.NEXT_PUBLIC_SUPABASE_URL");
-// }
-
-// if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-//   throw new Error("Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY");
-// }
-
-// export const supabase = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL,
-//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-//   {
-//     auth: {
-//       persistSession: true,
-//     },
-//     realtime: {
-//       params: {
-//         eventsPerSecond: 10,
-//       },
-//     },
-//   }
-// );
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
+// 客戶端使用
 export const supabase = createClientComponentClient();
+
+// 常量
+export const GUEST_USER_ID = '00000000-0000-0000-0000-000000000000';

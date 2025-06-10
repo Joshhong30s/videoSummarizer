@@ -1,17 +1,21 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { Category } from '@/lib/types/database';
+import { GUEST_USER_ID } from '@/lib/supabase';
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [version, setVersion] = useState(0); // Add version control
+  const [version, setVersion] = useState(0);
+  const { data: session } = useSession();
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await fetch('/api/categories');
+      const userId = session?.user?.id || GUEST_USER_ID;
+      const response = await fetch(`/api/categories?userId=${userId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch categories');
       }
@@ -24,19 +28,16 @@ export function useCategories() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [session?.user?.id]);
 
-  // Initialize and fetch categories on force update
   useEffect(() => {
     fetchCategories();
   }, [version, fetchCategories]);
 
-  // Force update method
   const refresh = useCallback(() => {
     setVersion(v => v + 1);
   }, []);
 
-  // Add new category
   const addCategory = async (name: string, color?: string) => {
     try {
       console.log('Adding category:', { name, color });
@@ -57,18 +58,14 @@ export function useCategories() {
 
       const data = await response.json();
       console.log('Category added successfully:', data);
-      refresh(); // Force update
+      refresh();
       return data;
     } catch (err) {
       console.error('Failed to add category:', err);
-      if (err instanceof Error) {
-        console.error('Add category error details:', err);
-      }
       throw err instanceof Error ? err : new Error('Failed to add category');
     }
   };
 
-  // Update category
   const updateCategory = async (id: string, updates: Partial<Category>) => {
     try {
       console.log('Updating category:', { id, updates });
@@ -89,7 +86,7 @@ export function useCategories() {
 
       const data = await response.json();
       console.log('Category updated successfully:', data);
-      refresh(); // Force update
+      refresh();
       return data;
     } catch (err) {
       console.error('Failed to update category:', err);
@@ -97,7 +94,6 @@ export function useCategories() {
     }
   };
 
-  // Delete category
   const deleteCategory = async (id: string) => {
     try {
       console.log('Preparing to delete category:', id);
@@ -117,7 +113,7 @@ export function useCategories() {
       }
 
       console.log('Category deleted successfully');
-      refresh(); // Force update
+      refresh();
     } catch (err) {
       console.error('Error deleting category:', err);
       throw err instanceof Error ? err : new Error('Failed to delete category');
@@ -131,6 +127,6 @@ export function useCategories() {
     addCategory,
     updateCategory,
     deleteCategory,
-    refresh, // Export refresh method
+    refresh,
   };
 }

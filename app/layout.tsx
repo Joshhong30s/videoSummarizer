@@ -1,6 +1,7 @@
 import { CategoriesProvider } from '@/lib/contexts/categories-context';
 import { VideosProvider } from '@/lib/contexts/videos-context';
 import { MainLayout } from './components/layout';
+import { Providers } from './providers';
 import './globals.css';
 
 export const metadata = {
@@ -16,11 +17,13 @@ export default function RootLayout({
   return (
     <html lang="zh-TW">
       <body>
-        <CategoriesProvider>
-          <VideosProvider>
-            <MainLayout>{children}</MainLayout>
-          </VideosProvider>
-        </CategoriesProvider>
+        <Providers>
+          <CategoriesProvider>
+            <VideosProvider>
+              <MainLayout>{children}</MainLayout>
+            </VideosProvider>
+          </CategoriesProvider>
+        </Providers>
       </body>
     </html>
   );

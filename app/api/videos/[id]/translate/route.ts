@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
+import { GUEST_USER_ID } from '@/lib/supabase';
 import { SubtitleEntry } from '@/lib/types';
 
 interface Translation {
@@ -50,6 +53,31 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id || GUEST_USER_ID;
+
+    // 驗證視頻所有權
+    const { data: video, error: videoCheckError } = await supabaseAdmin
+      .from('videos')
+      .select('user_id')
+      .eq('id', params.id)
+      .single();
+
+    if (videoCheckError) {
+      console.error('Error checking video ownership:', videoCheckError);
+      return NextResponse.json(
+        { message: 'Invalid video ID' },
+        { status: 404 }
+      );
+    }
+
+    if (!video || video.user_id !== userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized to translate this video' },
+        { status: 403 }
+      );
+    }
+
     const { subtitles } = await request.json();
 
     if (!Array.isArray(subtitles)) {
@@ -59,27 +87,15 @@ export async function POST(
       );
     }
 
-    const { data: existingTranslations, error: fetchError } = await supabase
-      .from('subtitle_translations')
-      .select('start_time, translated_text')
-      .eq('video_id', params.id);
+    const { data: existingTranslations, error: fetchError } =
+      await supabaseAdmin
+        .from('subtitle_translations')
+        .select('start_time, translated_text')
+        .eq('video_id', params.id);
 
     if (fetchError) {
       console.error('Error fetching existing translations:', fetchError);
       throw new Error('Failed to fetch existing translations');
-    }
-
-    const { error: videoCheckError } = await supabase
-      .from('videos')
-      .select('id')
-      .eq('id', params.id)
-      .single();
-
-    if (videoCheckError) {
-      return NextResponse.json(
-        { message: 'Invalid video ID' },
-        { status: 404 }
-      );
     }
 
     const translationsMap = new Map(
@@ -99,7 +115,7 @@ export async function POST(
       const translationPrompt = combineSubtitles(untranslatedSubtitles);
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GOOGLESTUDIO_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GOOGLESTUDIO_API_KEY}`,
         {
           method: 'POST',
           headers: {
@@ -140,6 +156,7 @@ export async function POST(
 
           return {
             video_id: params.id,
+            user_id: userId, // 添加用戶 ID
             start_time: Math.floor(translation.start_time),
             end_time: Math.floor(translation.start_time + subtitle.duration),
             original_text: subtitle.text,
@@ -148,7 +165,7 @@ export async function POST(
         })
         .filter(Boolean);
 
-      const { error: insertError } = await supabase
+      const { error: insertError } = await supabaseAdmin
         .from('subtitle_translations')
         .insert(translationsToInsert)
         .select();

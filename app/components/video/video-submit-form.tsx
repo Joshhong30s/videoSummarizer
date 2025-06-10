@@ -14,7 +14,7 @@ export function VideoSubmitForm({ onSuccess }: VideoSubmitFormProps) {
   const [url, setUrl] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const { submitVideo, isLoading, error } = useVideoSubmission();
-  const { categories } = useCategories();
+  const { categories, refresh } = useCategories();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +29,10 @@ export function VideoSubmitForm({ onSuccess }: VideoSubmitFormProps) {
       // Error is handled by the hook
       console.error('Failed to submit video:', err);
     }
+  };
+
+  const handleCategoriesChange = async () => {
+    await refresh();
   };
 
   const categoryOptions = categories.map(cat => ({
@@ -65,6 +69,7 @@ export function VideoSubmitForm({ onSuccess }: VideoSubmitFormProps) {
           placeholder="Select categories..."
           className="w-full"
           allowManage={true}
+          onCategoriesChange={handleCategoriesChange}
         />
       </div>
     </form>

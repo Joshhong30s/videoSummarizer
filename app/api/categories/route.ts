@@ -1,14 +1,22 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
+import { GUEST_USER_ID } from '@/lib/supabase';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const { data, error } = await supabase
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId') || GUEST_USER_ID;
+
+    const { data, error } = await supabaseAdmin
       .from('categories')
       .select('*')
+      .eq('user_id', userId)
       .order('name');
 
     if (error) {
+      console.error('Error fetching categories:', error);
       throw error;
     }
 
@@ -27,7 +35,10 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    console.log('Received add category request');
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id || GUEST_USER_ID;
+
+    console.log('Adding category for user:', userId);
     const { name, color } = await req.json();
     console.log('Request content:', { name, color });
 
@@ -38,24 +49,25 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('categories')
       .insert({
         name,
         color: color || '#2563eb',
+        user_id: userId
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('Error adding category:', error);
       throw error;
     }
 
     console.log('Category added successfully:', data);
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    console.error('API error - Failed to add category:', error);
+    console.error('Failed to add category:', error);
     return NextResponse.json(
       {
         message: 'Failed to add category',
@@ -68,6 +80,9 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id || GUEST_USER_ID;
+    
     const { id, ...updates } = await req.json();
 
     if (!id) {
@@ -77,43 +92,47 @@ export async function PATCH(req: Request) {
       );
     }
 
-    // Check if category exists
-    const { data: existingData } = await supabase
+    // Check if category exists and belongs to user
+    const { data: existingData } = await supabaseAdmin
       .from('categories')
-      .select('*') // Get all fields
+      .select('*')
       .eq('id', id)
+      .eq('user_id', userId)
       .single();
 
     if (!existingData) {
-      throw new Error('Category not found');
+      return NextResponse.json(
+        { error: 'Category not found or unauthorized' },
+        { status: 404 }
+      );
     }
 
-    // Update only provided fields, keep others unchanged
     const updateData = {
       ...existingData,
       ...updates,
+      user_id: userId // Ensure user_id doesn't change
     };
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('categories')
       .update(updateData)
       .eq('id', id)
+      .eq('user_id', userId) // Extra safety check
       .select()
       .single();
 
     if (error) {
-      console.error('Supabase update category error:', error);
+      console.error('Error updating category:', error);
       throw error;
     }
 
     console.log('Category updated successfully:', { id, data });
     return NextResponse.json(data);
   } catch (error) {
-    console.error('API error - Failed to update category:', error);
+    console.error('Failed to update category:', error);
     return NextResponse.json(
       {
-        message:
-          error instanceof Error ? error.message : 'Failed to update category',
+        message: 'Failed to update category',
         error: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
@@ -123,6 +142,9 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id || GUEST_USER_ID;
+    
     const { id } = await req.json();
 
     if (!id) {
@@ -132,32 +154,39 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Check if category exists
-    const { data: existingData } = await supabase
+    // Check if category exists and belongs to user
+    const { data: existingData } = await supabaseAdmin
       .from('categories')
       .select('id')
       .eq('id', id)
+      .eq('user_id', userId)
       .single();
 
     if (!existingData) {
-      throw new Error('Category not found');
+      return NextResponse.json(
+        { error: 'Category not found or unauthorized' },
+        { status: 404 }
+      );
     }
 
-    const { error } = await supabase.from('categories').delete().eq('id', id);
+    const { error } = await supabaseAdmin
+      .from('categories')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
 
     if (error) {
-      console.error('Supabase delete category error:', error);
+      console.error('Error deleting category:', error);
       throw error;
     }
 
     console.log('Category deleted successfully:', id);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('API error - Failed to delete category:', error);
+    console.error('Failed to delete category:', error);
     return NextResponse.json(
       {
-        message:
-          error instanceof Error ? error.message : 'Failed to delete category',
+        message: 'Failed to delete category',
         error: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }

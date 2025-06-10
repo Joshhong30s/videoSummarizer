@@ -37,6 +37,7 @@ export interface Category {
 export interface Summary {
   id: string;
   video_id: string;
+  user_id: string;
   en_summary: string;
   zh_summary: string;
   subtitles: SubtitleEntry[];

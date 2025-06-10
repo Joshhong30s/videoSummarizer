@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
 import type { VideoListItem, VideoSummary } from '@/lib/types';
 
 interface VideoDetail extends VideoListItem {
@@ -11,39 +10,19 @@ export function useVideoDetail(videoId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchVideoDetail = useCallback(async () => {
+const fetchVideoDetail = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-
-      const { data: videoData, error: videoError } = await supabase
-        .from('videos')
-        .select('*')
-        .eq('id', videoId)
-        .single();
-
-      if (videoError) throw videoError;
-
-      if (!videoData) {
-        throw new Error('Video not found');
+      
+      const response = await fetch(`/api/videos/${videoId}/detail`);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to fetch video details');
       }
-
-      const { data: summaryData, error: summaryError } = await supabase
-        .from('summaries')
-        .select('*')
-        .eq('video_id', videoId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (summaryError && summaryError.code !== 'PGRST116') {
-        throw summaryError;
-      }
-
-      setVideo({
-        ...videoData,
-        summary: summaryData,
-      });
+      
+      const data = await response.json();
+      setVideo(data);
     } catch (err) {
       console.error('Error fetching video details:', err);
       setError(

@@ -1,6 +1,10 @@
-'use client';
+import React from 'react';
 
-export function Logo() {
+interface LogoProps {
+  className?: string;
+}
+
+export function Logo({ className = '' }: LogoProps) {
   return (
     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
       <rect

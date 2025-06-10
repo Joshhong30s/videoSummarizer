@@ -1,7 +1,16 @@
 'use client';
 
-import { createContext, useContext, useCallback, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useCallback,
+  useState,
+  useEffect,
+  useRef,
+} from 'react';
 import { VideoListItem } from '@/lib/types';
+import { useSession } from 'next-auth/react';
+import { GUEST_USER_ID } from '@/lib/supabase';
 
 interface VideosContextType {
   videos: VideoListItem[];
@@ -35,39 +44,73 @@ export function VideosProvider({
   const [videos, setVideos] = useState<VideoListItem[]>(initialVideos);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { data: session, status } = useSession();
+  const fetchingRef = useRef(false);
 
   const refetch = useCallback(async () => {
-    setIsLoading(true);
+    // 避免重複的請求
+    if (fetchingRef.current) {
+      console.log('Already fetching videos, skipping...');
+      return;
+    }
+
+    // 如果 session 還在初始化，等待
+    if (status === 'loading') {
+      console.log('Session is loading, waiting...');
+      return;
+    }
+
+    console.log('Session status:', session ? 'Logged in' : 'Guest');
+    const userId = session?.user?.id || GUEST_USER_ID;
+    console.log('Fetching videos for userId:', userId);
+
     try {
-      const response = await fetch('/api/videos');
+      fetchingRef.current = true;
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch(`/api/videos?userId=${userId}`);
+      console.log('API response status:', response.status);
+
       if (!response.ok) {
         throw new Error('Failed to fetch videos');
       }
+
       const { data } = await response.json();
-      setVideos(data || []);
-      setError(null);
+      console.log(`Fetched ${data?.length || 0} videos`);
+
+      // 只在成功獲取新數據時更新
+      if (data) {
+        setVideos(data);
+      }
     } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error('Failed to fetch videos')
-      );
-      console.error('Error fetching videos:', err);
+      console.error('Error details:', err);
+      setError(err instanceof Error ? err : new Error('Failed to fetch videos'));
+      // 保持舊數據不變
     } finally {
       setIsLoading(false);
+      fetchingRef.current = false;
     }
-  }, []);
+  }, [session, status]);
 
-  const updateVideo = useCallback(
-    (id: string, updates: Partial<VideoListItem>) => {
-      setVideos(prev =>
-        prev.map(video => (video.id === id ? { ...video, ...updates } : video))
-      );
-    },
-    []
-  );
+  const updateVideo = useCallback((id: string, updates: Partial<VideoListItem>) => {
+    setVideos(prev =>
+      prev.map(video => (video.id === id ? { ...video, ...updates } : video))
+    );
+  }, []);
 
   const deleteVideo = useCallback((id: string) => {
     setVideos(prev => prev.filter(video => video.id !== id));
   }, []);
+
+  // 初始化和 session 變化時獲取數據
+  useEffect(() => {
+    // session 已就緒且不在載入中時才獲取
+    if (status !== 'loading') {
+      console.log('Initializing videos fetch...');
+      refetch();
+    }
+  }, [refetch, status]);
 
   return (
     <VideosContext.Provider

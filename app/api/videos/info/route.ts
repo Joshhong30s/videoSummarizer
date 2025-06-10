@@ -10,7 +10,7 @@ function parseISODuration(iso: string): number {
 async function getVideoInfo(videoUrl: string) {
   try {
     const videoId = getVideoId(videoUrl);
-    const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+    const apiKey = process.env.YOUTUBE_API_KEY;
 
     if (!apiKey) {
       throw new Error('Missing YOUTUBE_API_KEY');
