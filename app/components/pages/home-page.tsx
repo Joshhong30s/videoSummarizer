@@ -10,9 +10,10 @@ import { SearchResultItem } from '@/app/components/search/search-result-item';
 import { SearchResultSkeletonList } from '@/app/components/search/search-result-skeleton';
 import { VideoSubmitForm } from '@/app/components/video/video-submit-form';
 import { CONTENT_TYPE_OPTIONS } from '@/lib/types/search';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageSquare } from 'lucide-react';
 import { useVideos } from '@/lib/contexts/videos-context';
 import { ClientVideoCard } from '@/app/components/video/client-video-card';
+import { Chatbot } from '@/app/components/chat/chatbot';
 import { FAB } from '@/app/components/ui/fab';
 import { Modal } from '@/app/components/ui/modal';
 import { CategoryTag } from '@/app/components/ui/category-tag';
@@ -21,6 +22,7 @@ import { AppHeader } from '@/app/components/layout/app-header';
 export function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [showAddVideoModal, setShowAddVideoModal] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
   const { categories } = useCategories();
   const { videos, isLoading: videosLoading } = useVideos();
   const {
@@ -50,7 +52,10 @@ export function HomePage() {
   const showSearchResults = query.length > 0;
 
   // Helper function to check if date is within range
-  const isWithinRange = (dateStr: string | undefined, range: string): boolean => {
+  const isWithinRange = (
+    dateStr: string | undefined,
+    range: string
+  ): boolean => {
     if (!dateStr) return false;
     const date = new Date(dateStr);
     const now = new Date();
@@ -236,8 +241,20 @@ export function HomePage() {
             )}
           </div>
         )}
-        <FAB onClick={() => setShowAddVideoModal(true)} label="Add new video" />
+
+        <FAB
+          onClick={() => setShowChatbot(true)}
+          icon={<MessageSquare size={24} />}
+          aria-label="Open chat"
+          className="bottom-6 right-6"
+        />
+        <FAB
+          onClick={() => setShowAddVideoModal(true)}
+          aria-label="Add new video"
+          className="bottom-24 right-6"
+        />
       </div>
+      <Chatbot isOpen={showChatbot} onClose={() => setShowChatbot(false)} />
     </>
   );
 }
