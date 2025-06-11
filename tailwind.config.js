@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      animation: {
+        'gradient-flow': 'gradientFlow 6s ease-in-out infinite',
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
@@ -34,6 +37,12 @@ module.exports = {
           foreground: 'hsl(var(--accent-foreground))',
         },
         card: 'hsl(var(--card))',
+      },
+      keyframes: {
+        gradientFlow: {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
       },
     },
   },
