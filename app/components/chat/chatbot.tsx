@@ -4,9 +4,10 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Mic, StopCircle } from 'lucide-react'; // Import icons
 
 interface ChatMessage {
-  id: string; // 可以是來自資料庫的 ID 或臨時的客戶端 ID
+  id: string;
   role: 'user' | 'assistant';
   content: string;
 }
@@ -33,6 +34,12 @@ export function Chatbot({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [isListening, setIsListening] = useState(false);
+  const [recognitionLang, setRecognitionLang] = useState<'zh-TW' | 'en-US'>(
+    'zh-TW'
+  );
+  const speechRecognitionRef = useRef<any | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -40,6 +47,80 @@ export function Chatbot({
   };
 
   useEffect(scrollToBottom, [messages]);
+
+  const handleToggleRecognitionLang = () => {
+    setRecognitionLang(prevLang => (prevLang === 'zh-TW' ? 'en-US' : 'zh-TW'));
+  };
+
+  const handleToggleListening = () => {
+    const SpeechRecognitionAPI =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognitionAPI) {
+      setError('語音輸入功能不受您的瀏覽器支援。');
+      return;
+    }
+
+    if (isListening && speechRecognitionRef.current) {
+      speechRecognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      const recognition = new SpeechRecognitionAPI();
+      recognition.lang = recognitionLang;
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setError(null);
+        console.log('Speech recognition started');
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setUserInput(prevInput => prevInput + transcript);
+        console.log('Speech recognized:', transcript);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error', event.error);
+        let errorMessage = '語音識別時發生錯誤。';
+        if (event.error === 'no-speech') {
+          errorMessage = '未偵測到語音，請再試一次。';
+        } else if (event.error === 'audio-capture') {
+          errorMessage = '無法擷取麥克風音訊，請檢查權限。';
+        } else if (event.error === 'not-allowed') {
+          errorMessage = '麥克風權限被拒絕或尚未授予。';
+        }
+        setError(errorMessage);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+        console.log('Speech recognition ended');
+      };
+
+      speechRecognitionRef.current = recognition;
+      try {
+        recognition.start();
+      } catch (err) {
+        console.error('Error starting recognition:', err);
+        setError('無法啟動語音識別。');
+        setIsListening(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (speechRecognitionRef.current) {
+        speechRecognitionRef.current.abort();
+        speechRecognitionRef.current = null;
+        setIsListening(false);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,8 +147,8 @@ export function Chatbot({
         body: JSON.stringify({
           userInput: newUserMessage.content,
           sessionId: sessionId,
-          // userId: userId, // 如果需要
-          sessionMetadata: contextMetadata, //
+          // userId: userId, 
+          sessionMetadata: contextMetadata, 
         }),
       });
 
@@ -103,22 +184,22 @@ export function Chatbot({
     }
   };
 
-  const chatboxStyle: React.CSSProperties = {
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
-    width: '400px',
-    height: '500px',
-    border: '1px solid #ccc',
-    borderRadius: '8px',
-    backgroundColor: 'white',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-    display: isOpen ? 'flex' : 'none',
-    flexDirection: 'column',
-    fontFamily: 'sans-serif',
-    overflow: 'hidden',
-    zIndex: 1050,
-  };
+  // const chatboxStyle: React.CSSProperties = {
+  //   position: 'fixed',
+  //   bottom: '20px',
+  //   right: '20px',
+  //   width: '400px',
+  //   height: '500px',
+  //   border: '1px solid #ccc',
+  //   borderRadius: '8px',
+  //   backgroundColor: 'white',
+  //   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+  //   display: isOpen ? 'flex' : 'none',
+  //   flexDirection: 'column',
+  //   fontFamily: 'sans-serif',
+  //   overflow: 'hidden',
+  //   zIndex: 1050,
+  // };
 
   const messagesContainerStyle: React.CSSProperties = {
     flexGrow: 1,
@@ -167,7 +248,15 @@ export function Chatbot({
   }
 
   return (
-    <div style={chatboxStyle} className="chatbot-container">
+    <div
+      className={`
+        chatbot-container fixed z-50 bg-white dark:bg-gray-800 flex flex-col overflow-hidden
+        bottom-0 left-0 right-0 w-full h-[85vh] rounded-t-xl shadow-2xl border-t border-gray-300 dark:border-gray-700
+        md:bottom-5 md:right-5 md:left-auto md:top-auto 
+        md:w-[400px] md:h-[500px] md:rounded-lg md:shadow-xl md:border 
+        ${isOpen ? 'flex' : 'hidden'} 
+      `}
+    >
       <div
         style={{
           padding: '10px',
@@ -215,23 +304,51 @@ export function Chatbot({
           Error: {error}
         </div>
       )}
-      <form onSubmit={handleSubmit} style={formStyle} className="chatbot-form">
+      <form
+        onSubmit={handleSubmit}
+        style={formStyle}
+        className="chatbot-form items-center"
+      >
+        <button
+          type="button"
+          onClick={handleToggleRecognitionLang}
+          disabled={isLoading || isListening}
+          title={`Switch to ${recognitionLang === 'zh-TW' ? 'English' : 'Chinese (Traditional)'} input`}
+          className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors mr-2"
+          style={{ flexShrink: 0 }}
+        >
+          {recognitionLang === 'zh-TW' ? 'EN' : '中'}
+        </button>
+        <button
+          type="button"
+          onClick={handleToggleListening}
+          disabled={isLoading && !isListening}
+          title={isListening ? 'Stop voice input' : 'Start voice input'}
+          className={`p-2 rounded-full transition-colors mr-2 ${
+            isListening
+              ? 'bg-red-500 text-white hover:bg-red-600'
+              : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+          }`}
+          style={{ flexShrink: 0 }}
+        >
+          {isListening ? <StopCircle size={20} /> : <Mic size={20} />}
+        </button>
         <input
           type="text"
           value={userInput}
           onChange={e => setUserInput(e.target.value)}
-          placeholder="Type your message..."
+          placeholder={isListening ? 'Listening...' : 'Type your message...'}
           style={inputStyle}
           disabled={isLoading}
           className="chatbot-input"
         />
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !userInput.trim()}
           style={buttonStyle}
           className="chatbot-submit"
         >
-          {isLoading ? 'Sending...' : 'Send'}
+          {isLoading && !isListening ? 'Sending...' : 'Send'}
         </button>
       </form>
     </div>
