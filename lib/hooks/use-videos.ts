@@ -29,7 +29,6 @@ export function useVideos() {
 
     fetchVideos();
 
-    // Subscribe to changes
     const channel = supabase
       .channel('videos-changes')
       .on(
@@ -40,7 +39,6 @@ export function useVideos() {
           table: 'videos',
         },
         async () => {
-          // Refetch videos when there's a change
           const { data } = await supabase
             .from('videos')
             .select('*')

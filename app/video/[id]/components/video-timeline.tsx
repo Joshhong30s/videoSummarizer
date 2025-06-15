@@ -13,7 +13,6 @@ export function VideoTimeline({ className }: TimelineProps) {
   const { currentTime, duration, seek } = useVideoPlayer();
   const [value, setValue] = useState<number[]>([0]);
 
-  // 同步內部狀態與影片目前時間
   useEffect(() => {
     setValue([currentTime]);
   }, [currentTime]);

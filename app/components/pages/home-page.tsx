@@ -51,7 +51,6 @@ export function HomePage() {
 
   const showSearchResults = query.length > 0;
 
-  // Helper function to check if date is within range
   const isWithinRange = (
     dateStr: string | undefined,
     range: string
@@ -74,24 +73,20 @@ export function HomePage() {
     }
   };
 
-  // Apply filters and sort
   let filteredVideos = [...videos];
 
-  // 1. Category filter
   if (categoryIds.length > 0) {
     filteredVideos = filteredVideos.filter(video =>
       video.category_ids?.some(id => categoryIds.includes(id))
     );
   }
 
-  // 2. Date range filter
   if (dateRange) {
     filteredVideos = filteredVideos.filter(video =>
       isWithinRange(video.published_at || video.created_at, dateRange)
     );
   }
 
-  // 3. Sort by date
   filteredVideos.sort((a, b) => {
     const dateA = new Date(a.published_at || a.created_at);
     const dateB = new Date(b.published_at || b.created_at);
@@ -114,7 +109,6 @@ export function HomePage() {
           </div>
         </Modal>
 
-        {/* Search Area */}
         <div className="rounded-lg border bg-card p-6 shadow-sm">
           <h2 className="text-lg font-semibold mb-4">Search</h2>
           <SearchBar
@@ -126,7 +120,6 @@ export function HomePage() {
           />
         </div>
 
-        {/* Display Area */}
         {showSearchResults ? (
           <div className="rounded-lg border bg-card p-6">
             {/* Search Results Header */}
@@ -138,12 +131,10 @@ export function HomePage() {
               </h2>
             </div>
 
-            {/* Loading State */}
             {searchLoading && !results.length ? (
               <SearchResultSkeletonList />
             ) : (
               <>
-                {/* Search Results List */}
                 <div className="space-y-4">
                   {results.map((result, index) => (
                     <SearchResultItem
@@ -153,7 +144,6 @@ export function HomePage() {
                   ))}
                 </div>
 
-                {/* Load More Button */}
                 {hasMore && (
                   <div className="mt-8 flex justify-center">
                     <button

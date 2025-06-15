@@ -16,7 +16,6 @@ export async function GET(request: Request, { params }: RouteParams) {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id || GUEST_USER_ID;
 
-    // 驗證視頻所有權
     const { data: video, error: videoCheckError } = await supabaseAdmin
       .from('videos')
       .select('user_id')
@@ -65,7 +64,6 @@ export async function POST(request: Request, { params }: RouteParams) {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id || GUEST_USER_ID;
 
-    // 驗證視頻所有權
     const { data: video, error: videoCheckError } = await supabaseAdmin
       .from('videos')
       .select('user_id')
@@ -91,18 +89,16 @@ export async function POST(request: Request, { params }: RouteParams) {
     const input = await request.json();
     console.log('Received highlight input:', input);
 
-    // Transform the input to match database schema
     const highlightData = {
       video_id: input.video_id,
-      user_id: userId, // 添加用戶 ID
+      user_id: userId,
       content: input.content,
       start_offset: input.start_offset,
       end_offset: input.end_offset,
       type: input.type,
-      color: input.color || '#FFD700', // Use provided color or default to yellow
+      color: input.color || '#FFD700',
     };
 
-    // Ensure the video ID matches the route parameter
     if (highlightData.video_id !== params.id) {
       return NextResponse.json({ error: 'Video ID mismatch' }, { status: 400 });
     }

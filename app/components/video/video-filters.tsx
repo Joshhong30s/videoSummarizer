@@ -57,7 +57,6 @@ export function VideoFilters({
     onQueryChange('');
   };
 
-  // Listen for Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && query) {

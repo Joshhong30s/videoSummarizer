@@ -18,7 +18,6 @@ export function useSearch() {
   const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
 
-  // Reset all filters
   const resetFilters = useCallback(() => {
     setContentTypes(['all']);
     setCategoryIds([]);
@@ -26,15 +25,12 @@ export function useSearch() {
     setSort('');
   }, []);
 
-  // Watch for search query changes
   useEffect(() => {
-    // Reset all filters when search box is cleared
     if (!query) {
       resetFilters();
     }
   }, [query, resetFilters]);
 
-  // Perform search
   const performSearch = useCallback(
     async (resetPage = true) => {
       if (!query) {
@@ -49,7 +45,6 @@ export function useSearch() {
         setError(null);
         const currentPage = resetPage ? 1 : page;
 
-        // Use all content types if 'all' is selected
         const searchContentTypes = contentTypes.includes('all')
           ? ALL_CONTENT_TYPES
           : contentTypes;
@@ -76,7 +71,6 @@ export function useSearch() {
 
         const data = await response.json();
 
-        // Replace results if resetting page; otherwise append results
         setResults(prev =>
           resetPage ? data.results : [...prev, ...data.results]
         );
@@ -96,7 +90,6 @@ export function useSearch() {
     [query, contentTypes, categoryIds, dateRange, page]
   );
 
-  // Watch for search criteria changes
   useEffect(() => {
     if (!query) {
       setResults([]);
@@ -112,7 +105,6 @@ export function useSearch() {
     return () => clearTimeout(timer);
   }, [query, contentTypes, categoryIds, dateRange, performSearch]);
 
-  // Load more results
   const loadMore = useCallback(() => {
     if (loading || !hasMore) return;
     setPage(prev => prev + 1);
@@ -139,7 +131,6 @@ export function useSearch() {
   };
 }
 
-// Convert date range to timestamps
 function getTimeRange(range: string) {
   const now = new Date();
   const start = new Date();

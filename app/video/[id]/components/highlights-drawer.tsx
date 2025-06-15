@@ -52,7 +52,7 @@ export function HighlightsDrawer({
   };
 
   const handleSaveNote = async (id: string) => {
-    await updateHighlight(id, { note: editNote }); // ✅ 修正型別
+    await updateHighlight(id, { note: editNote });
     setEditingHighlight(null);
     setEditNote('');
   };

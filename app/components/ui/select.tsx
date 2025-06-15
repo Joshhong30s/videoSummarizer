@@ -37,7 +37,6 @@ export function Select({
   const [isUpdating, setIsUpdating] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Handle clicking outside to close dropdown
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -68,7 +67,7 @@ export function Select({
 
   const handleSaveCategories = async () => {
     if (!onCategoriesChange) return;
-    
+
     try {
       setIsUpdating(true);
       await onCategoriesChange();
@@ -83,7 +82,6 @@ export function Select({
   return (
     <>
       <div className="relative" ref={containerRef}>
-        {/* Input box */}
         <div
           className={cn(
             'min-h-[2.5rem] p-1.5 border rounded-md bg-white cursor-pointer flex flex-wrap gap-1.5 items-center transition-all',
@@ -126,10 +124,8 @@ export function Select({
           />
         </div>
 
-        {/* Dropdown */}
         {isOpen && (
           <div className="absolute left-0 right-0 z-10 mt-1 bg-white border rounded-md shadow-lg overflow-hidden min-w-[240px]">
-            {/* Header with Manage Button */}
             <div className="flex items-center justify-between px-3 py-2 border-b bg-gray-50/80">
               <h3 className="text-sm font-medium text-gray-700">
                 Select Categories
@@ -152,7 +148,6 @@ export function Select({
               )}
             </div>
 
-            {/* Options Grid */}
             <div
               className={cn(
                 'p-1.5 overflow-y-auto',
@@ -194,7 +189,6 @@ export function Select({
         )}
       </div>
 
-      {/* Modal */}
       {showManageModal && (
         <Modal
           title="Manage Categories"

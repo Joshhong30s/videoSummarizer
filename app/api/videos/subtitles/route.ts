@@ -1,4 +1,3 @@
-// app/api/videos/subtitles/route.ts (Next.js 13 Route Handler)
 import { NextResponse } from 'next/server';
 import { youtube_v3 } from '@googleapis/youtube';
 import axios from 'axios';
@@ -25,13 +24,9 @@ function getBase64Protobuf(message: Record<string, any>): string {
   return Buffer.from(buffer).toString('base64');
 }
 
-/**
- * 取得影片的預設字幕語言與 trackKind
- */
 async function getDefaultSubtitleLanguage(
   videoId: string
 ): Promise<{ trackKind: string; language: string }> {
-  // 1. videos.list 拿 defaultLanguage 或 defaultAudioLanguage
   const videosRes = await youtubeClient.videos.list({
     part: ['snippet'],
     id: [videoId],
@@ -43,7 +38,6 @@ async function getDefaultSubtitleLanguage(
   const preferredLang =
     snippet.defaultLanguage || snippet.defaultAudioLanguage || 'en';
 
-  // 2. captions.list 拿所有可用字幕 track metadata
   const capsRes = await youtubeClient.captions.list({
     part: ['snippet'],
     videoId,
@@ -53,16 +47,12 @@ async function getDefaultSubtitleLanguage(
     throw new Error(`No captions metadata for video: ${videoId}`);
   }
 
-  // 優先尋找 preferredLang，否則取第一個
   const pick =
     items.find(c => c.snippet?.language === preferredLang) || items[0];
   const { trackKind, language } = pick.snippet!;
   return { trackKind: trackKind || 'standard', language: language! };
 }
 
-/**
- * 呼叫 InnerTube API 取得字幕段落
- */
 async function fetchTranscriptSegments(
   videoId: string,
   trackKind: string,
@@ -123,10 +113,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Step A: 先用 Data API 確認 trackKind & language
     const { trackKind, language } = await getDefaultSubtitleLanguage(videoId);
 
-    // Step B: 呼叫 InnerTube 取字幕
     const subtitles = await fetchTranscriptSegments(
       videoId,
       trackKind,

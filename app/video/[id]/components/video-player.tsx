@@ -13,7 +13,6 @@ interface VideoPlayerProps {
 export function VideoPlayer({ videoId, className }: VideoPlayerProps) {
   const { playerRef, isPlaying, updateState } = useVideoPlayer();
 
-  // Convert video ID to full YouTube URL
   const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
   const onProgress = useCallback(

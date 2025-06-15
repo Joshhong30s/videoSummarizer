@@ -12,7 +12,6 @@ export async function PATCH(
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id || GUEST_USER_ID;
 
-    // 驗證視頻所有權
     const { data: video, error: videoCheckError } = await supabaseAdmin
       .from('videos')
       .select('user_id')
@@ -47,7 +46,7 @@ export async function PATCH(
       .from('videos')
       .update({ status })
       .eq('id', params.id)
-      .eq('user_id', userId); // 確保只更新用戶自己的視頻
+      .eq('user_id', userId);
 
     if (updateError) {
       console.error('Error updating video status:', updateError);

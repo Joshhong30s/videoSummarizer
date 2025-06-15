@@ -1,10 +1,3 @@
-/**
- * Utility functions for chunking subtitles for summary generation
- */
-
-/**
- * Interface for subtitle data
- */
 interface SubtitleLine {
   start: number;
   end?: number;
@@ -40,7 +33,6 @@ export function chunkSubtitles(
       (line.end || line.start + (line.duration || 0)) - currentChunkStartTime;
     const lineCharCount = line.text.length;
 
-    // Check if adding this line would exceed duration or character limits
     if (
       currentDuration + lineDuration > maxChunkDuration ||
       currentChunkCharCount + lineCharCount > maxChunkChars
@@ -57,7 +49,6 @@ export function chunkSubtitles(
     currentChunkCharCount += lineCharCount;
   }
 
-  // Add the last chunk if it contains any lines
   if (currentChunk.length > 0) {
     chunks.push(currentChunk);
   }

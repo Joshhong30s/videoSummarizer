@@ -23,26 +23,23 @@ export function useSubtitleRange(allSubtitles: SubtitleEntry[]) {
     );
   }, [allSubtitles, range]);
 
-  // Format subtitles as plain text
   const getPlainText = useCallback(() => {
     return filteredSubtitles.map(s => s.text).join('\n\n');
   }, [filteredSubtitles]);
 
-  // Format subtitles with timestamps
   const getTimedText = useCallback(() => {
     return filteredSubtitles
       .map(s => `${formatTimestamp(s.start)}\n${s.text}\n`)
       .join('\n');
   }, [filteredSubtitles]);
 
-  // Parse timed translation text
   const parseTimedTranslation = useCallback((text: string) => {
     const lines = text.split('\n').filter(line => line.trim());
     const translations: { time: string; text: string }[] = [];
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      // Time format: MM:SS or HH:MM:SS
+
       if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(line)) {
         const nextLine = lines[i + 1];
         if (nextLine) {
@@ -50,14 +47,13 @@ export function useSubtitleRange(allSubtitles: SubtitleEntry[]) {
             time: line,
             text: nextLine.trim(),
           });
-          i++; // Skip next line
+          i++;
         }
       }
     }
     return translations;
   }, []);
 
-  // Copy to clipboard
   const copyToClipboard = useCallback(
     async (format: 'plain' | 'timed') => {
       const text = format === 'plain' ? getPlainText() : getTimedText();

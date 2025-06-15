@@ -5,13 +5,11 @@ import type { Highlight } from '@/lib/types/database';
 import type { UIHighlight } from '@/lib/types/video';
 import type { HighlightCreate } from '@/lib/types/core';
 
-// hooks/video/use-highlights.ts
 export function useHighlights({ videoId }: { videoId: string }) {
   const [highlights, setHighlights] = useState<UIHighlight[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Example API
   const addHighlight = async (input: HighlightCreate): Promise<Highlight> => {
     try {
       const res = await fetch(`/api/videos/${videoId}/highlights`, {
@@ -86,7 +84,6 @@ export function useHighlights({ videoId }: { videoId: string }) {
     }
   };
 
-  // Fetch on mount
   useEffect(() => {
     async function fetchHighlights() {
       try {

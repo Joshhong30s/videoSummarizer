@@ -18,7 +18,6 @@ export function NotFoundPage({
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-md mx-auto text-center">
-        {/* Not Found image */}
         <div className="w-48 h-48 mx-auto mb-8">
           <svg
             viewBox="0 0 240 240"
@@ -26,12 +25,10 @@ export function NotFoundPage({
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
           >
-            {/* Screen with search icon */}
             <circle cx="120" cy="120" r="116" fill="#F3F4F6" />
             <rect x="60" y="70" width="120" height="90" rx="8" fill="#E5E7EB" />
             <rect x="64" y="74" width="112" height="82" rx="6" fill="white" />
 
-            {/* Search icon */}
             <circle
               cx="105"
               cy="115"
@@ -47,7 +44,6 @@ export function NotFoundPage({
               strokeLinecap="round"
             />
 
-            {/* Question marks */}
             <path
               d="M160 90C160 90 165 85 170 90"
               stroke="#9CA3AF"
@@ -89,11 +85,9 @@ export function NotFoundPage({
           </svg>
         </div>
 
-        {/* Message */}
         <h1 className="text-2xl font-semibold text-gray-900 mb-2">{title}</h1>
         <p className="text-gray-500 mb-8">{message}</p>
 
-        {/* Action */}
         <Link
           href={actionHref}
           className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

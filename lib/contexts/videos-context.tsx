@@ -48,13 +48,11 @@ export function VideosProvider({
   const fetchingRef = useRef(false);
 
   const refetch = useCallback(async () => {
-    // 避免重複的請求
     if (fetchingRef.current) {
       console.log('Already fetching videos, skipping...');
       return;
     }
 
-    // 如果 session 還在初始化，等待
     if (status === 'loading') {
       console.log('Session is loading, waiting...');
       return;
@@ -79,33 +77,34 @@ export function VideosProvider({
       const { data } = await response.json();
       console.log(`Fetched ${data?.length || 0} videos`);
 
-      // 只在成功獲取新數據時更新
       if (data) {
         setVideos(data);
       }
     } catch (err) {
       console.error('Error details:', err);
-      setError(err instanceof Error ? err : new Error('Failed to fetch videos'));
-      // 保持舊數據不變
+      setError(
+        err instanceof Error ? err : new Error('Failed to fetch videos')
+      );
     } finally {
       setIsLoading(false);
       fetchingRef.current = false;
     }
   }, [session, status]);
 
-  const updateVideo = useCallback((id: string, updates: Partial<VideoListItem>) => {
-    setVideos(prev =>
-      prev.map(video => (video.id === id ? { ...video, ...updates } : video))
-    );
-  }, []);
+  const updateVideo = useCallback(
+    (id: string, updates: Partial<VideoListItem>) => {
+      setVideos(prev =>
+        prev.map(video => (video.id === id ? { ...video, ...updates } : video))
+      );
+    },
+    []
+  );
 
   const deleteVideo = useCallback((id: string) => {
     setVideos(prev => prev.filter(video => video.id !== id));
   }, []);
 
-  // 初始化和 session 變化時獲取數據
   useEffect(() => {
-    // session 已就緒且不在載入中時才獲取
     if (status !== 'loading') {
       console.log('Initializing videos fetch...');
       refetch();

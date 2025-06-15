@@ -14,7 +14,6 @@ export async function DELETE(
 
     console.log('Deleting video:', params.id, 'for user:', userId);
 
-    // 驗證視頻所有權
     const { data: video, error: videoCheckError } = await supabaseAdmin
       .from('videos')
       .select('user_id')
@@ -33,7 +32,6 @@ export async function DELETE(
       );
     }
 
-    // 刪除相關數據
     const { error: highlightsError } = await supabaseAdmin
       .from('highlights')
       .delete()
@@ -58,7 +56,7 @@ export async function DELETE(
       .from('videos')
       .delete()
       .eq('id', params.id)
-      .eq('user_id', userId); // 再次確認用戶權限
+      .eq('user_id', userId);
 
     if (videoError) {
       console.error('Error deleting video:', videoError);
@@ -91,7 +89,6 @@ export async function PATCH(
     const userId = session?.user?.id || GUEST_USER_ID;
     const updates = await request.json();
 
-    // 驗證視頻所有權
     const { data: video, error: videoCheckError } = await supabaseAdmin
       .from('videos')
       .select('user_id')
@@ -114,7 +111,7 @@ export async function PATCH(
       .from('videos')
       .update(updates)
       .eq('id', params.id)
-      .eq('user_id', userId) // 再次確認用戶權限
+      .eq('user_id', userId)
       .select()
       .single();
 

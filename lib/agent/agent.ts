@@ -1,5 +1,3 @@
-// lib/agent/agent.ts
-
 import { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '../supabase';
 import {
@@ -10,7 +8,6 @@ import {
   updateSessionMetadata,
 } from './memory';
 
-// --- Google Gemini API Configuration ---
 const GEMINI_API_KEY = process.env.GOOGLESTUDIO_API_KEY;
 const GEMINI_MODEL_ID = 'gemini-2.0-flash';
 
@@ -96,7 +93,7 @@ export async function processUserMessage(
   const historyMessages = await getMessagesForSession(
     supabase,
     currentSessionId,
-    20 // Fetch last 10 messages (user + assistant pairs)
+    20
   );
 
   const geminiChatHistory: GeminiContent[] = historyMessages

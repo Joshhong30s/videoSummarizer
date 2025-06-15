@@ -57,7 +57,7 @@ export function Chatbot({
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) {
-      setError('語音輸入功能不受您的瀏覽器支援。');
+      setError('voice recognition is not supported in this browser.');
       return;
     }
 
@@ -84,13 +84,13 @@ export function Chatbot({
 
       recognition.onerror = (event: any) => {
         console.error('Speech recognition error', event.error);
-        let errorMessage = '語音識別時發生錯誤。';
+        let errorMessage = 'error occurred during speech recognition.';
         if (event.error === 'no-speech') {
-          errorMessage = '未偵測到語音，請再試一次。';
+          errorMessage = 'no speech was detected.';
         } else if (event.error === 'audio-capture') {
-          errorMessage = '無法擷取麥克風音訊，請檢查權限。';
+          errorMessage = 'cannot capture audio.';
         } else if (event.error === 'not-allowed') {
-          errorMessage = '麥克風權限被拒絕或尚未授予。';
+          errorMessage = 'permission to use microphone was denied.';
         }
         setError(errorMessage);
         setIsListening(false);
@@ -106,7 +106,7 @@ export function Chatbot({
         recognition.start();
       } catch (err) {
         console.error('Error starting recognition:', err);
-        setError('無法啟動語音識別。');
+        setError('failed to start speech recognition.');
         setIsListening(false);
       }
     }
@@ -137,8 +137,6 @@ export function Chatbot({
     setError(null);
 
     try {
-      // const userId = getUserId ? getUserId() : undefined; // 如果需要傳遞 userId
-
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -147,8 +145,8 @@ export function Chatbot({
         body: JSON.stringify({
           userInput: newUserMessage.content,
           sessionId: sessionId,
-          // userId: userId, 
-          sessionMetadata: contextMetadata, 
+          // userId: userId,
+          sessionMetadata: contextMetadata,
         }),
       });
 

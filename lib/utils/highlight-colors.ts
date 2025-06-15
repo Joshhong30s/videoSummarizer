@@ -1,10 +1,10 @@
 const HIGHLIGHT_COLORS = [
-  '#FFC107', // Yellow
-  '#4CAF50', // Green
-  '#2196F3', // Blue
-  '#E91E63', // Pink
-  '#9C27B0', // Purple
-  '#FF5722', // Orange
+  '#FFC107', 
+  '#4CAF50', 
+  '#2196F3', 
+  '#E91E63', 
+  '#9C27B0', 
+  '#FF5722', 
 ];
 
 let currentColorIndex = 0;

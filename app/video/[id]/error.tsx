@@ -8,8 +8,6 @@ import {
   isNotFoundError,
 } from '@/lib/types/error';
 
-// Note: We can't use generateErrorMetadata directly in client components,
-// but we keep it here for consistency in the routing structure
 export const metadata = generateErrorMetadata(
   'Video Error',
   'An error occurred while loading the video. Please try again later.'

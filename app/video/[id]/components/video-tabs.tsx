@@ -22,34 +22,6 @@ export function VideoTabs({
   const { processVideo, loading } = useVideoProcessing();
   const [hasTriggeredProcess, setHasTriggeredProcess] = useState(false);
 
-  // useEffect(() => {
-  //   // Trigger processing when video status is pending and has no subtitles
-  //   if (
-  //     !hasTriggeredProcess &&
-  //     video.status === 'pending' &&
-  //     (!video.summary || !video.summary.subtitles)
-  //   ) {
-  //     setHasTriggeredProcess(true); // 防止重複處理
-  //     processVideo(video.id, video.youtube_id)
-  //       .then(() => {
-  //         console.log('Video processing completed');
-  //         onVideoUpdate?.();
-  //       })
-  //       .catch(error => {
-  //         console.error('Failed to process video:', error);
-  //         setHasTriggeredProcess(false); // 如果處理失敗，允許重試
-  //       });
-  //   }
-  // }, [
-  //   video.id,
-  //   video.status,
-  //   video.youtube_id,
-  //   video.summary,
-  //   processVideo,
-  //   onVideoUpdate,
-  //   hasTriggeredProcess,
-  // ]);
-
   const hasProcessedRef = useRef(false);
 
   useEffect(() => {
@@ -67,16 +39,16 @@ export function VideoTabs({
         })
         .catch(error => {
           console.error('Failed to process video:', error);
-          hasProcessedRef.current = false; // ✅ 失敗才重置
+          hasProcessedRef.current = false;
         });
     }
   }, [
-    video.id, // ✅ primitive
-    video.status, // ✅ primitive
-    video.youtube_id, // ✅ primitive
-    video.summary?.subtitles, // ✅ optional chain to avoid object dependency
-    onVideoUpdate, // ✅ function reference
-    processVideo, // ✅ function reference
+    video.id,
+    video.status,
+    video.youtube_id,
+    video.summary?.subtitles,
+    onVideoUpdate,
+    processVideo,
   ]);
 
   return (

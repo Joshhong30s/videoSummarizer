@@ -1,4 +1,4 @@
-// app/api/videos/route.ts 
+// app/api/videos/route.ts
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { GUEST_USER_ID } from '@/lib/supabase';
@@ -9,7 +9,6 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
 export async function POST(req: Request) {
   try {
-    // 1. 驗證 NextAuth session
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -18,7 +17,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. 解析請求
     const { url, category_ids = [] } = await req.json();
     if (!url) {
       return NextResponse.json({ error: 'No URL provided' }, { status: 400 });
@@ -37,7 +35,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. 檢查是否已存在
     const { data: existingVideo, error: existingError } = await supabaseAdmin
       .from('videos')
       .select('id')
@@ -51,13 +48,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // 4. 取得影片資訊
     const origin = new URL(req.url).origin;
     const infoRes = await fetch(`${origin}/api/videos/info?videoId=${videoId}`);
     if (!infoRes.ok) throw new Error('Failed to fetch video info');
     const videoInfo = await infoRes.json();
 
-    // 5. 插入新影片（使用 service_role，跳過 RLS）
     const { error: insertError } = await supabaseAdmin.from('videos').insert({
       youtube_id: videoId,
       title: videoInfo.title,
@@ -92,7 +87,6 @@ export async function GET(req: Request) {
 
     console.log('Fetching videos for userId:', userId);
 
-    // 使用 service_role client 跳過 RLS
     const { data: videos, error } = await supabaseAdmin
       .from('videos')
       .select('*')

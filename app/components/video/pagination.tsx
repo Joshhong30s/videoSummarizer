@@ -39,7 +39,6 @@ export function Pagination({
       className={cn('flex items-center gap-1', className)}
       aria-label="Pagination"
     >
-      {/* Previous Page */}
       <button
         onClick={() => onPageChange(page - 1)}
         disabled={page === 1}
@@ -49,7 +48,6 @@ export function Pagination({
         <ChevronLeft className="h-4 w-4" />
       </button>
 
-      {/* Page Numbers */}
       {getVisiblePages().map((pageNum, idx) => (
         <React.Fragment key={idx}>
           {pageNum === '...' ? (
@@ -71,7 +69,6 @@ export function Pagination({
         </React.Fragment>
       ))}
 
-      {/* Next Page */}
       <button
         onClick={() => onPageChange(page + 1)}
         disabled={page === totalPages}

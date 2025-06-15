@@ -23,7 +23,7 @@ export function useVideoActions(): UseVideoActionsResult {
         .from('videos')
         .update({
           status: 'pending',
-          summary: null, // Clear previous summary data
+          summary: null,
         })
         .eq('id', videoId);
 

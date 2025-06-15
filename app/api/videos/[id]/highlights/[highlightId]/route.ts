@@ -46,7 +46,6 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   try {
     const updates = await request.json();
 
-    // Don't allow changing video_id
     delete updates.video_id;
 
     const { data, error } = await supabase

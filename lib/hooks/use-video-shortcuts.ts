@@ -7,7 +7,6 @@ export function useVideoShortcuts() {
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      // Only handle shortcuts when not typing in an input
       if (
         document.activeElement?.tagName === 'INPUT' ||
         document.activeElement?.tagName === 'TEXTAREA'
@@ -27,22 +26,22 @@ export function useVideoShortcuts() {
 
         case 'ArrowLeft':
           event.preventDefault();
-          seekTo(Math.max(0, currentTime - 5)); // Rewind 5 seconds
+          seekTo(Math.max(0, currentTime - 5));
           break;
 
         case 'ArrowRight':
           event.preventDefault();
-          seekTo(Math.min(duration, currentTime + 5)); // Forward 5 seconds
+          seekTo(Math.min(duration, currentTime + 5));
           break;
 
         case 'KeyJ':
           event.preventDefault();
-          seekTo(Math.max(0, currentTime - 10)); // Rewind 10 seconds
+          seekTo(Math.max(0, currentTime - 10));
           break;
 
         case 'KeyL':
           event.preventDefault();
-          seekTo(Math.min(duration, currentTime + 10)); // Forward 10 seconds
+          seekTo(Math.min(duration, currentTime + 10));
           break;
 
         case 'KeyK':
@@ -56,12 +55,12 @@ export function useVideoShortcuts() {
 
         case 'Home':
           event.preventDefault();
-          seekTo(0); // Go to start
+          seekTo(0);
           break;
 
         case 'End':
           event.preventDefault();
-          seekTo(duration); // Go to end
+          seekTo(duration);
           break;
 
         default:

@@ -32,12 +32,10 @@ export function SubtitleLine({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Timestamp */}
       <div className="w-20 flex-none text-sm text-gray-500 font-mono">
         {formatDuration(subtitle.start)}
       </div>
 
-      {/* Content */}
       <div className="flex-1 space-y-1">
         <p className="text-sm text-gray-900">{subtitle.text}</p>
         {translation && (
@@ -45,7 +43,6 @@ export function SubtitleLine({
         )}
       </div>
 
-      {/* Highlight Button */}
       {(isHovered || highlighted) && (onHighlight || onUnhighlight) && (
         <button
           onClick={highlighted ? onUnhighlight : onHighlight}

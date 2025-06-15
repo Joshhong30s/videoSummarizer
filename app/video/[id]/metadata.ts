@@ -24,7 +24,6 @@ export async function generateMetadata({
   );
 
   try {
-    // Fetch video details
     const { data: video, error: videoError } = await supabase
       .from('videos')
       .select('*')
@@ -38,17 +37,14 @@ export async function generateMetadata({
       };
     }
 
-    // Fetch summary if exists
     const { data: summary } = await supabase
       .from('summaries')
       .select('*')
       .eq('video_id', params.id)
       .single();
 
-    // Generate description from summary if available
     let description = 'No summary available yet.';
     if (summary?.en_summary) {
-      // Take first paragraph or first 200 characters
       description = summary.en_summary.split('\n')[0].slice(0, 200) + '...';
     } else if (summary?.zh_summary) {
       description = summary.zh_summary.split('\n')[0].slice(0, 200) + '...';
@@ -90,7 +86,6 @@ export async function generateMetadata({
       },
     };
   } catch {
-    // Return default metadata in case of any errors
     return {
       title: 'Video Summary',
       description: 'View video summaries and highlights.',

@@ -45,7 +45,6 @@ export function SearchResultItem({ result }: SearchResultItemProps) {
     `/video/${result.video_id}` +
     (result.timestamp ? `?t=${Math.floor(result.timestamp)}` : '');
 
-  // Render HTML content with highlights
   const renderHTML = (html: string | undefined) => {
     if (!html) return { __html: '' };
     return { __html: html };
@@ -56,7 +55,6 @@ export function SearchResultItem({ result }: SearchResultItemProps) {
   return (
     <Link href={videoUrl}>
       <div className="group flex gap-4 rounded-lg border p-4 transition-colors hover:bg-gray-50">
-        {/* Thumbnail */}
         <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-md">
           <Image
             src={result.thumbnail_url}
@@ -72,9 +70,7 @@ export function SearchResultItem({ result }: SearchResultItemProps) {
           )}
         </div>
 
-        {/* Content */}
         <div className="flex-1 space-y-2 overflow-hidden">
-          {/* Title and type label */}
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-1">
               <h3
@@ -82,7 +78,6 @@ export function SearchResultItem({ result }: SearchResultItemProps) {
                 dangerouslySetInnerHTML={renderHTML(result.video_title)}
               />
               <div className="flex items-center gap-2">
-                {/* Type icon and label */}
                 <div
                   className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${CONTENT_TYPE_COLORS[contentType as keyof typeof CONTENT_TYPE_COLORS]}`}
                 >
@@ -103,7 +98,6 @@ export function SearchResultItem({ result }: SearchResultItemProps) {
             </div>
           </div>
 
-          {/* Content preview */}
           {result.content && (
             <div className="relative">
               <p
@@ -114,7 +108,6 @@ export function SearchResultItem({ result }: SearchResultItemProps) {
             </div>
           )}
 
-          {/* Additional info */}
           <div className="flex items-center gap-2 text-xs text-gray-500">
             {contentType === 'subtitle' && (
               <span className="flex items-center gap-1">

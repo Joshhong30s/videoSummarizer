@@ -55,8 +55,7 @@ export function VideoHeader({
               tab === 'notes' && 'bg-gray-100 text-gray-900'
             )}
           >
-            <List className="h-4 w-4" />
-            筆記 ({notesCount})
+            <List className="h-4 w-4" />({notesCount}) notes
           </Button>
           <Button
             variant="ghost"
@@ -67,8 +66,8 @@ export function VideoHeader({
               tab === 'highlights' && 'bg-gray-100 text-gray-900'
             )}
           >
-            <SplitSquareHorizontal className="h-4 w-4" />
-            重點 ({highlightsCount})
+            <SplitSquareHorizontal className="h-4 w-4" />({highlightsCount})
+            highlights
           </Button>
         </div>
       </div>

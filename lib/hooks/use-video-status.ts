@@ -6,7 +6,6 @@ export function useVideoStatus(videoId: string) {
   const [status, setStatus] = useState<VideoDetail['status']>('pending');
 
   useEffect(() => {
-    // Get initial status
     supabase
       .from('videos')
       .select('status')
@@ -18,7 +17,6 @@ export function useVideoStatus(videoId: string) {
         }
       });
 
-    // Subscribe to changes
     const channel = supabase
       .channel(`video-${videoId}`)
       .on(

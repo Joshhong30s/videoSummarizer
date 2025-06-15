@@ -14,7 +14,6 @@ interface UseVideoSubmissionResult {
 export function useVideoSubmission(): UseVideoSubmissionResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  // const supabase = createClientComponentClient();
 
   const { refetch } = useVideos();
   const submitVideo = async (url: string, categoryIds?: string[]) => {
@@ -43,7 +42,6 @@ export function useVideoSubmission(): UseVideoSubmissionResult {
         throw new Error(errorData.error || 'Failed to add video');
       }
 
-      // Refresh video list after successful addition
       await refetch();
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Error adding video'));

@@ -6,9 +6,9 @@ export interface ObsidianNote {
 }
 
 export interface ObsidianConfig {
-  endpoint: string; // Default: http://localhost:27123
-  vault?: string; // Optional vault name
-  folder?: string; // Optional folder path
+  endpoint: string;
+  vault?: string;
+  folder?: string;
 }
 
 export interface ObsidianService {

@@ -11,7 +11,6 @@ interface ErrorPageProps {
 
 export function ErrorPage({ error, reset }: ErrorPageProps) {
   useEffect(() => {
-    // Log the error to an error reporting service
     console.error('Error:', {
       message: error.message,
       code: error.code,
@@ -24,7 +23,6 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-md mx-auto text-center">
-        {/* Error image */}
         <div className="w-48 h-48 mx-auto mb-8">
           <svg
             viewBox="0 0 240 240"
@@ -32,7 +30,6 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
           >
-            {/* Screen with error icon */}
             <circle cx="120" cy="120" r="116" fill="#F3F4F6" />
             <rect x="60" y="70" width="120" height="90" rx="8" fill="#E5E7EB" />
             <rect x="64" y="74" width="112" height="82" rx="6" fill="white" />
@@ -72,7 +69,6 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
           </svg>
         </div>
 
-        {/* Error message */}
         <div className="space-y-2 mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">
             {error.status === 404 ? 'Not Found' : 'Something went wrong'}
@@ -86,7 +82,6 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
           )}
         </div>
 
-        {/* Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href="/"
@@ -104,7 +99,6 @@ export function ErrorPage({ error, reset }: ErrorPageProps) {
           )}
         </div>
 
-        {/* Error details (development only) */}
         {process.env.NODE_ENV === 'development' &&
           (error.digest || error.context) && (
             <div className="mt-8 text-left">

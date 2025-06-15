@@ -18,7 +18,11 @@ interface CategoryEditorProps {
   isUpdating?: boolean;
 }
 
-export function CategoryEditor({ onSave, onCancel, isUpdating = false }: CategoryEditorProps) {
+export function CategoryEditor({
+  onSave,
+  onCancel,
+  isUpdating = false,
+}: CategoryEditorProps) {
   const {
     categories,
     loading,
@@ -38,7 +42,6 @@ export function CategoryEditor({ onSave, onCancel, isUpdating = false }: Categor
   const handleSubmit = async () => {
     try {
       if (editingId) {
-        // Check if only color was modified
         const updates: Partial<Category> = {};
         if (formData.color !== editingCategory?.color) {
           updates.color = formData.color;
@@ -48,17 +51,16 @@ export function CategoryEditor({ onSave, onCancel, isUpdating = false }: Categor
         }
 
         await updateCategory(editingId, updates);
-        refresh(); // Force refresh category list
+        refresh();
         setEditingId(null);
         setEditingCategory(null);
       } else {
         await addCategory(formData.name, formData.color);
-        refresh(); // Force refresh category list
+        refresh();
         setIsAdding(false);
       }
       setFormData({ name: '', color: '#2563eb' });
 
-      // Notify parent component
       if (onSave) {
         await onSave();
       }
@@ -83,7 +85,7 @@ export function CategoryEditor({ onSave, onCancel, isUpdating = false }: Categor
 
     try {
       await deleteCategory(id);
-      refresh(); // Force refresh category list
+      refresh();
     } catch (error) {
       console.error('Failed to delete category:', error);
       alert(

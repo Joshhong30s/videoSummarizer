@@ -43,7 +43,6 @@ const parseSubtitles = (text: string): ParsedSubtitle[] => {
       continue;
     }
 
-    // Try to parse as timestamp (MM:SS)
     const timeMatch = trimmedLine.match(/^(\d{1,2}):(\d{2})$/);
     if (timeMatch) {
       if (currentTime !== null && currentText.length > 0) {
@@ -59,7 +58,6 @@ const parseSubtitles = (text: string): ParsedSubtitle[] => {
     }
   }
 
-  // Add the last subtitle if exists
   if (currentTime !== null && currentText.length > 0) {
     subtitles.push({
       start: currentTime,
@@ -88,7 +86,6 @@ const convertToSubtitleEntries = (
 const formatSubtitlesForDisplay = (subtitles: SubtitleEntry[]): string => {
   return subtitles
     .map(sub => {
-      // Convert seconds to MM:SS format
       const minutes = Math.floor(sub.start / 60);
       const seconds = Math.floor(sub.start % 60);
       const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;

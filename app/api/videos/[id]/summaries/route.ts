@@ -12,7 +12,6 @@ export async function POST(
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id || GUEST_USER_ID;
 
-    // 驗證視頻所有權
     const { data: video, error: videoCheckError } = await supabaseAdmin
       .from('videos')
       .select('user_id')
@@ -47,16 +46,16 @@ export async function POST(
       .from('summaries')
       .insert({
         video_id: params.id,
-        user_id: userId, // 添加用戶 ID
+        user_id: userId,
         subtitles,
       });
 
     if (summaryError) {
       console.error('Error saving summary:', summaryError);
       return NextResponse.json(
-        { 
-          message: 'Failed to save subtitles', 
-          error: summaryError.message 
+        {
+          message: 'Failed to save subtitles',
+          error: summaryError.message,
         },
         { status: 500 }
       );
@@ -86,7 +85,6 @@ export async function GET(
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id || GUEST_USER_ID;
 
-    // 驗證視頻所有權
     const { data: video, error: videoCheckError } = await supabaseAdmin
       .from('videos')
       .select('user_id')

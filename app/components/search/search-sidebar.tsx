@@ -47,7 +47,6 @@ export function SearchSidebar({
     [contentTypes, setContentTypes]
   );
 
-  // Load more results when scrolling near the bottom
   const handleScroll = useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {
       const div = e.currentTarget;
@@ -69,7 +68,6 @@ export function SearchSidebar({
         className
       )}
     >
-      {/* Search Filters */}
       <div className="p-4 border-b">
         <SearchFilters
           selectedTypes={contentTypes}
@@ -77,7 +75,6 @@ export function SearchSidebar({
         />
       </div>
 
-      {/* Search Results */}
       <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
         {loading ? (
           <div className="p-4 text-center">Loading...</div>
@@ -101,14 +98,12 @@ export function SearchSidebar({
         )}
       </div>
 
-      {/* Results Summary */}
       {query && !loading && !error && (
         <div className="p-4 border-t text-sm text-muted-foreground">
           {total} Results
         </div>
       )}
 
-      {/* Optional Children */}
       {children}
     </div>
   );

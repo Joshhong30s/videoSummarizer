@@ -10,7 +10,6 @@ interface VideoSidebarProps {
 export function VideoSidebar({ video_id }: VideoSidebarProps) {
   const { videos, loading, error } = useVideos();
 
-  // Filter out the current video and only show other videos
   const relatedVideos = videos?.filter(v => v.id !== video_id) || [];
 
   if (loading) {

@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       category_ids: params.categoryIds?.map(String),
       start_time: params.timeRange?.start,
       end_time: params.timeRange?.end,
-      user_id: userId, // 添加用戶 ID 作為搜索條件
+      user_id: userId,
     });
 
     if (error) {

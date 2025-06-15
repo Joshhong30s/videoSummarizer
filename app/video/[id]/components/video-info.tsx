@@ -31,10 +31,8 @@ export function VideoInfo({ video, className = '' }: VideoInfoProps) {
     <div className={`bg-white rounded-lg p-6 ${className}`}>
       <div className="flex items-start gap-6">
         <div className="flex-1 min-w-0">
-          {/* Basic metadata */}
           <VideoMetadata video={video} className="mb-4" />
 
-          {/* External link */}
           <div className="flex items-center gap-4">
             <Tooltip content="Open in YouTube">
               <a
@@ -50,7 +48,6 @@ export function VideoInfo({ video, className = '' }: VideoInfoProps) {
           </div>
         </div>
 
-        {/* Toggle details button */}
         <IconButton
           icon={ChevronDown}
           onClick={() => setIsExpanded(!isExpanded)}
@@ -61,7 +58,6 @@ export function VideoInfo({ video, className = '' }: VideoInfoProps) {
         />
       </div>
 
-      {/* Expandable statistics panel */}
       <VideoStatsContainer
         video={video}
         expanded={isExpanded}

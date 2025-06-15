@@ -98,22 +98,20 @@ export function useVideoProcessing(): UseVideoProcessingResult {
       setError(null);
       setProgress(0);
 
-      // Update video status to processing
+     
       await updateVideoStatus(videoId, 'processing');
 
       setProgress(10);
 
-      // Fetch subtitles through API
       const subtitles = await fetchSubtitles(youtubeId);
 
       setProgress(60);
 
-      // Save subtitle data
       await saveSubtitles(videoId, subtitles);
 
       setProgress(80);
 
-      // Update video status to completed
+   
       await updateVideoStatus(videoId, 'completed');
 
       setProgress(100);
@@ -121,7 +119,7 @@ export function useVideoProcessing(): UseVideoProcessingResult {
       setError(
         err instanceof Error ? err : new Error('Failed to process video')
       );
-      // Update status to failed on error
+     
       await updateVideoStatus(videoId, 'failed');
       throw err;
     } finally {

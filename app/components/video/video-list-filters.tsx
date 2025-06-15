@@ -32,7 +32,6 @@ export function VideoListFilters({
 
   return (
     <>
-      {/* Time Controls */}
       <div className="flex gap-2 items-center">
         <select
           value={dateRange}
@@ -55,7 +54,6 @@ export function VideoListFilters({
         </select>
       </div>
 
-      {/* Category Tags */}
       <div className="mt-4 flex flex-wrap gap-2">
         {categories.map(category => (
           <button

@@ -156,7 +156,7 @@ export async function POST(
 
           return {
             video_id: params.id,
-            user_id: userId, // 添加用戶 ID
+            user_id: userId,
             start_time: Math.floor(translation.start_time),
             end_time: Math.floor(translation.start_time + subtitle.duration),
             original_text: subtitle.text,

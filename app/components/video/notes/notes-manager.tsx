@@ -20,19 +20,16 @@ export function NotesManager({ videoId }: NotesManagerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editingNote, setEditingNote] = useState<VideoNote | null>(null);
 
-  // Start editing
   const handleStartEdit = useCallback((note?: VideoNote) => {
     setEditingNote(note || null);
     setIsEditing(true);
   }, []);
 
-  // Cancel editing
   const handleCancel = useCallback(() => {
     setIsEditing(false);
     setEditingNote(null);
   }, []);
 
-  // Save note
   const handleSave = useCallback(
     async (content: string) => {
       if (editingNote) {
@@ -69,7 +66,6 @@ export function NotesManager({ videoId }: NotesManagerProps) {
     tags: [],
   }));
 
-  // Prepare export data
   const notesContent = transformedNotes.map(note => note.content).join('\n\n');
   const highlights = transformedNotes
     .filter(note => note.timestamp)
@@ -82,7 +78,6 @@ export function NotesManager({ videoId }: NotesManagerProps) {
 
   return (
     <div className="space-y-6">
-      {/* Toolbar */}
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Notes List</h3>
         <div className="flex items-center gap-4">
@@ -106,7 +101,6 @@ export function NotesManager({ videoId }: NotesManagerProps) {
         </div>
       </div>
 
-      {/* Editor */}
       {isEditing && (
         <div className="border rounded-lg p-4 bg-gray-50">
           <NoteEditor
@@ -117,7 +111,6 @@ export function NotesManager({ videoId }: NotesManagerProps) {
         </div>
       )}
 
-      {/* Notes List */}
       <NoteList
         notes={transformedNotes}
         onEdit={handleStartEdit}

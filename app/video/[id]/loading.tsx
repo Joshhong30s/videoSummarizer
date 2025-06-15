@@ -7,11 +7,9 @@ import {
 export default function VideoLoading() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Video info skeleton */}
       <SkeletonContainer className="p-4 mb-6">
         <div className="flex items-start gap-4">
           <div className="flex-1">
-            {/* Title and stats */}
             <SkeletonGroup className="space-y-4">
               <Skeleton className="h-7 w-3/4" />
 
@@ -25,19 +23,14 @@ export default function VideoLoading() {
             </SkeletonGroup>
           </div>
 
-          {/* Expand button */}
           <Skeleton className="w-8 h-8" />
         </div>
       </SkeletonContainer>
 
-      {/* Main content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main content area */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Video player skeleton */}
           <Skeleton className="aspect-video w-full" />
 
-          {/* Tabs skeleton */}
           <SkeletonContainer>
             <div className="border-b border-gray-200 px-4 py-3">
               <div className="flex gap-4">
@@ -58,9 +51,7 @@ export default function VideoLoading() {
           </SkeletonContainer>
         </div>
 
-        {/* Sidebar skeleton */}
         <div className="space-y-6">
-          {/* Related videos skeleton */}
           <SkeletonContainer className="p-4">
             <SkeletonGroup className="space-y-4">
               <Skeleton className="h-6 w-32" />
@@ -77,7 +68,6 @@ export default function VideoLoading() {
             </SkeletonGroup>
           </SkeletonContainer>
 
-          {/* Analytics skeleton */}
           <SkeletonContainer className="p-4">
             <SkeletonGroup className="space-y-4">
               <Skeleton className="h-6 w-24" />

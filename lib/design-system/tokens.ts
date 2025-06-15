@@ -54,14 +54,14 @@ export const typography = {
     mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
   },
   fontSize: {
-    xs: '0.75rem', // 12px
-    sm: '0.875rem', // 14px
-    base: '1rem', // 16px
-    lg: '1.125rem', // 18px
-    xl: '1.25rem', // 20px
-    '2xl': '1.5rem', // 24px
-    '3xl': '1.875rem', // 30px
-    '4xl': '2.25rem', // 36px
+    xs: '0.75rem',
+    sm: '0.875rem',
+    base: '1rem',
+    lg: '1.125rem',
+    xl: '1.25rem',
+    '2xl': '1.5rem',
+    '3xl': '1.875rem',
+    '4xl': '2.25rem',
   },
   fontWeight: {
     light: 300,
@@ -129,7 +129,6 @@ export const shadows = {
   inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
 };
 
-// Border Radius
 export const borderRadius = {
   none: '0',
   sm: '0.125rem',
@@ -142,7 +141,6 @@ export const borderRadius = {
   full: '9999px',
 };
 
-// Z-index
 export const zIndex = {
   0: 0,
   10: 10,

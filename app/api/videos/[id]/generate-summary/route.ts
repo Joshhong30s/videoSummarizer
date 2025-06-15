@@ -22,7 +22,6 @@ export async function POST(
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id || GUEST_USER_ID;
 
-    // 驗證視頻所有權
     const { data: video, error: videoCheckError } = await supabaseAdmin
       .from('videos')
       .select('user_id')
@@ -181,7 +180,7 @@ export async function POST(
       .from('videos')
       .update({ status: 'summarized' })
       .eq('id', params.id)
-      .eq('user_id', userId); // 確保只更新用戶自己的視頻
+      .eq('user_id', userId);
 
     if (updateError) {
       throw new Error(`Failed to update video status: ${updateError.message}`);

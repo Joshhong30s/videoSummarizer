@@ -26,7 +26,6 @@ export function VideoSubmitForm({ onSuccess }: VideoSubmitFormProps) {
       setSelectedCategories([]);
       onSuccess?.();
     } catch (err) {
-      // Error is handled by the hook
       console.error('Failed to submit video:', err);
     }
   };

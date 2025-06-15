@@ -25,21 +25,20 @@ export const authOptions: NextAuthOptions = {
         return {
           id: GUEST_USER_ID,
           email: 'guest@example.com',
-          name: 'Guest'
+          name: 'Guest',
         };
-      }
-    })
+      },
+    }),
   ],
   callbacks: {
     async signIn({ user, account }: { user: User; account: any }) {
       if (account?.provider === 'credentials') {
         return true;
       }
-      
+
       if (account?.provider !== 'google') return false;
-      
+
       try {
-        // 先查找用戶是否存在
         const { data: existingUser } = await supabase
           .from('users')
           .select('id')
@@ -47,24 +46,22 @@ export const authOptions: NextAuthOptions = {
           .single();
 
         if (existingUser) {
-          // 如果用戶已存在，使用現有 ID
           user.id = existingUser.id;
           return true;
         }
 
-        // 用戶不存在時創建新記錄
         const uuid = crypto.randomUUID();
         const { error } = await supabase.from('users').insert({
           id: uuid,
           email: user.email,
-          name: user.name
+          name: user.name,
         });
-        
+
         if (error) {
           console.error('Error saving user to Supabase:', error);
           return false;
         }
-        
+
         user.id = uuid;
         return true;
       } catch (error) {
@@ -74,14 +71,12 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
-        // 首次登入時將 UUID 儲存到 token
         token.id = user.id;
       }
       return token;
     },
     async session({ session, token }: { session: Session; token: JWT }) {
       if (session?.user) {
-        // 從 token 中獲取 UUID，並確保類型正確
         session.user.id = token.id as string;
       }
       return session;

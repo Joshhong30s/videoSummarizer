@@ -98,7 +98,6 @@ export function generateMarkdownContent({
   ].join('\n');
 }
 
-// 用於下載 markdown 文件的輔助函數
 export function downloadMarkdown(content: string, filename: string) {
   const blob = new Blob([content], { type: 'text/markdown' });
   const url = URL.createObjectURL(blob);

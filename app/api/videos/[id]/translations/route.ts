@@ -12,7 +12,6 @@ export async function GET(
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id || GUEST_USER_ID;
 
-    // 驗證視頻所有權
     const { data: video, error: videoCheckError } = await supabaseAdmin
       .from('videos')
       .select('user_id')
@@ -38,7 +37,7 @@ export async function GET(
       .from('subtitle_translations')
       .select('start_time, translated_text')
       .eq('video_id', params.id)
-      .eq('user_id', userId);  // 確保只獲取用戶自己的翻譯
+      .eq('user_id', userId);
 
     if (translationsError) {
       console.error('Error fetching translations:', translationsError);

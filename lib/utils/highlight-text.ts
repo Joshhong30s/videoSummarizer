@@ -26,7 +26,6 @@ export function highlightText(text: string, query: string): React.ReactNode {
       })
     );
   } catch (error) {
-    // If there's any error with the regex, return the original text
     console.error('Error highlighting text:', error);
     return text;
   }

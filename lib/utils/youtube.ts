@@ -16,7 +16,6 @@ export function getVideoId(url: string): string | null {
       const videoId = urlObj.searchParams.get('v');
       if (videoId) return videoId;
 
-      // Handle /embed/ URLs
       if (urlObj.pathname.startsWith('/embed/')) {
         return urlObj.pathname.split('/')[2];
       }

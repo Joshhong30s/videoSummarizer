@@ -28,13 +28,11 @@ export function extractVideoId(urlString: string): string | null {
   try {
     const url = new URL(urlString);
 
-    // Handle youtu.be format
     if (url.hostname.includes('youtu.be')) {
       const id = url.pathname.slice(1);
       return id || null;
     }
 
-    // Handle youtube.com format
     const videoId = url.searchParams.get('v');
     if (videoId) {
       return videoId;
@@ -46,9 +44,6 @@ export function extractVideoId(urlString: string): string | null {
   }
 }
 
-/**
- * Type for YouTube video data
- */
 export interface YoutubeVideoInfo {
   youtube_id: string;
   title: string;

@@ -20,21 +20,26 @@ function ModelSelectionModal({
   onClose,
 }: ModelSelectionModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="選擇摘要生成模型">
+    <Modal isOpen={isOpen} onClose={onClose} title="Select Summary Model">
       <div className="space-y-4 p-4">
         <button
           onClick={() => onSelect('openai')}
           className="w-full p-4 text-left rounded-lg border border-gray-200 hover:bg-gray-50"
         >
           <h3 className="font-medium mb-1">OpenAI GPT-3.5</h3>
-          <p className="text-sm text-gray-500">推薦用於複雜或專業的影片內容</p>
+          <p className="text-sm text-gray-500">
+            {' '}
+            Recommended for complex or professional video content
+          </p>
         </button>
         <button
           onClick={() => onSelect('gemini')}
           className="w-full p-4 text-left rounded-lg border border-gray-200 hover:bg-gray-50"
         >
           <h3 className="font-medium mb-1">Google Gemini</h3>
-          <p className="text-sm text-gray-500">適合一般或簡單的影片內容</p>
+          <p className="text-sm text-gray-500">
+            Suitable for general or simple video content
+          </p>
         </button>
       </div>
     </Modal>
