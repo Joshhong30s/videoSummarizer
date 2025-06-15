@@ -58,12 +58,10 @@ export function VideoPlayerProvider({
   );
 
   const play = async () => {
-    playerRef.current?.getInternalPlayer()?.play();
     updateState({ isPlaying: true });
   };
 
   const pause = () => {
-    playerRef.current?.getInternalPlayer()?.pause();
     updateState({ isPlaying: false });
   };
 
