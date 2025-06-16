@@ -39,12 +39,12 @@ export const CONTENT_TYPE_OPTIONS: Array<{
   label: string;
   value: ContentType;
 }> = [
-  { label: '全部', value: 'all' },
-  { label: '影片', value: 'video' },
-  { label: '摘要', value: 'summary' },
-  { label: '字幕', value: 'subtitle' },
-  { label: '重點', value: 'highlight' },
-  { label: '筆記', value: 'takeaway' },
+  { label: 'All', value: 'all' },
+  { label: 'Video', value: 'video' },
+  { label: 'Summary', value: 'summary' },
+  { label: 'Subtitle', value: 'subtitle' },
+  { label: 'Highlight', value: 'highlight' },
+  { label: 'Note', value: 'takeaway' },
 ];
 
 export const ALL_CONTENT_TYPES: ContentType[] = [
