@@ -47,32 +47,57 @@ export async function POST(request: Request) {
       ? ALL_CONTENT_TYPES
       : params.contentTypes;
 
-    const { data, error } = await supabaseAdmin.rpc('search_video_content', {
-      search_query: params.query,
-      content_types:
-        effectiveContentTypes.length > 0
-          ? effectiveContentTypes
-          : ALL_CONTENT_TYPES,
-      category_ids: params.categoryIds?.map(String),
-      start_time: params.timeRange?.start,
-      end_time: params.timeRange?.end,
-      user_id: userId,
-    });
+    // Fetch search results
+    const { data: resultsData, error: resultsError } = await supabaseAdmin.rpc(
+      'search_video_content',
+      {
+        search_query: params.query,
+        content_types:
+          effectiveContentTypes.length > 0
+            ? effectiveContentTypes
+            : ALL_CONTENT_TYPES,
+        category_ids: params.categoryIds?.map(String),
+        start_time: params.timeRange?.start,
+        end_time: params.timeRange?.end,
+        user_id: userId,
+        _page: params.page,
+        _limit: params.limit,
+      }
+    );
 
-    if (error) {
-      console.error('Search error:', error);
+    if (resultsError) {
+      console.error('Search results error:', resultsError);
       return NextResponse.json(
-        { error: 'search failed', details: error.message },
+        { error: 'search failed', details: resultsError.message },
         { status: 500 }
       );
     }
 
-    const allResults = (data || []) as SearchResponseItem[];
-    const start = (params.page - 1) * params.limit;
-    const end = start + params.limit;
-    const results = allResults.slice(start, end);
-    const total = allResults.length;
-    const hasMore = end < total;
+    // Fetch total count
+    const { data: totalCountData, error: totalCountError } =
+      await supabaseAdmin.rpc('get_search_total_count', {
+        search_query: params.query,
+        content_types:
+          effectiveContentTypes.length > 0
+            ? effectiveContentTypes
+            : ALL_CONTENT_TYPES,
+        category_ids: params.categoryIds?.map(String),
+        start_time: params.timeRange?.start,
+        end_time: params.timeRange?.end,
+        user_id: userId,
+      });
+
+    if (totalCountError) {
+      console.error('Search total count error:', totalCountError);
+      return NextResponse.json(
+        { error: 'search failed', details: totalCountError.message },
+        { status: 500 }
+      );
+    }
+
+    const results = (resultsData || []) as SearchResponseItem[];
+    const total = totalCountData as number;
+    const hasMore = params.page * params.limit < total;
 
     const formattedResults = results.map(result => ({
       ...result,
