@@ -1,10 +1,9 @@
-// app/components/chat/chatbot.tsx
 'use client';
 
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Mic, StopCircle } from 'lucide-react'; // Import icons
+import { Mic, StopCircle } from 'lucide-react';
 
 interface ChatMessage {
   id: string;
@@ -111,6 +110,16 @@ export function Chatbot({
       }
     }
   };
+
+  useEffect(() => {
+    if (!sessionId) return;
+    async function fetchHistory() {
+      const res = await fetch(`/api/chat/messages?sessionId=${sessionId}`);
+      const data = await res.json();
+      setMessages(data);
+    }
+    fetchHistory();
+  }, [sessionId]);
 
   useEffect(() => {
     return () => {

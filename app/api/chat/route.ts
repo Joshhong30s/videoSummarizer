@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { processUserMessage } from '@/lib/agent/agent'; // 假設 lib 在根目錄下，並配置了路徑別名 @
-
+import { processUserMessage } from '@/lib/agent/agent';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userInput, sessionId, userId, sessionMetadata } = body;
-
-    if (!userInput) {
-      return NextResponse.json(
-        { error: 'userInput is required' },
-        { status: 400 }
-      );
-    }
+    const { userInput, sessionId, sessionMetadata } = body;
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
 
     const agentResponse = await processUserMessage(
       userInput,

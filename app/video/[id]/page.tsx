@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useVideoDetail } from '@/lib/hooks/video/use-video-detail';
 import { VideoPlayer } from './components/video-player';
 import { VideoInfo } from './components/video-info';
@@ -23,6 +23,18 @@ interface VideoPageProps {
 export default function VideoPage({ params }: VideoPageProps) {
   const { video, loading, error, refetch } = useVideoDetail(params.id);
   const [showChatbot, setShowChatbot] = useState(false);
+  const [chatSessionId, setChatSessionId] = useState<string | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    async function fetchSessionId() {
+      const res = await fetch(`/api/chat/session?videoId=${params.id}`);
+      const { sessionId } = await res.json();
+      setChatSessionId(sessionId ?? undefined);
+    }
+    fetchSessionId();
+  }, [params.id]);
 
   if (error) {
     return (
@@ -47,6 +59,7 @@ export default function VideoPage({ params }: VideoPageProps) {
     );
   }
 
+  console.log('chatSessionId:', chatSessionId);
   return (
     <>
       <VideoPlayerProvider>
@@ -84,6 +97,7 @@ export default function VideoPage({ params }: VideoPageProps) {
         isOpen={showChatbot}
         onClose={() => setShowChatbot(false)}
         contextMetadata={{ videoId: params.id }}
+        initialSessionId={chatSessionId}
       />
     </>
   );

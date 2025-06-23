@@ -1,8 +1,4 @@
-// lib/agent/memory.ts
-
 import { SupabaseClient } from '@supabase/supabase-js';
-
-import { supabase } from '../supabase';
 
 export interface ChatSession {
   id: string;
@@ -26,13 +22,6 @@ export interface ChatMessage {
   metadata?: Record<string, any> | null;
 }
 
-/**
-
- * @param supabase 
- * @param userId 
- * @param initialMetadata 
- * @returns
- */
 export async function createChatSession(
   supabase: SupabaseClient,
   userId?: string,
@@ -57,13 +46,6 @@ export async function createChatSession(
   return data as ChatSession;
 }
 
-/**
-
- * @param supabase 
- * @param sessionId 
- * @param messageData 
- * @returns 
- */
 export async function addMessageToSession(
   supabase: SupabaseClient,
   sessionId: string,
@@ -97,14 +79,6 @@ export async function addMessageToSession(
   return data as ChatMessage;
 }
 
-/**
-
- * @param supabase 
- * @param sessionId 
- * @param limit 
- * @param offset 
- * @returns 
- */
 export async function getMessagesForSession(
   supabase: SupabaseClient,
   sessionId: string,
@@ -126,14 +100,6 @@ export async function getMessagesForSession(
   return data as ChatMessage[];
 }
 
-/**
-
- * @param supabase 
- * @param userId 
- * @param limit 
- * @param offset 
- * @returns 
- */
 export async function getSessionsForUser(
   supabase: SupabaseClient,
   userId: string,
@@ -162,12 +128,6 @@ export async function getSessionsForUser(
   return data as ChatSession[];
 }
 
-/**
- * @param supabase
- * @param sessionId
- * @param metadata
- * @returns
- */
 export async function updateSessionMetadata(
   supabase: SupabaseClient,
   sessionId: string,
