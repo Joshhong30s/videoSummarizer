@@ -217,16 +217,15 @@ export function Chatbot({
   };
 
   const messageStyle = (role: 'user' | 'assistant'): React.CSSProperties => ({
-    position: 'relative',
     padding: '8px 12px',
     borderRadius: '18px',
     maxWidth: '70%',
-    wordWrap: 'break-word',
+    wordBreak: 'break-word',
+    whiteSpace: 'pre-line',
     alignSelf: role === 'user' ? 'flex-end' : 'flex-start',
     backgroundColor: role === 'user' ? '#007bff' : '#e9ecef',
     color: role === 'user' ? 'white' : 'black',
-    minHeight: '36px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+    marginBottom: 6,
   });
 
   const formStyle: React.CSSProperties = {
