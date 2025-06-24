@@ -25,6 +25,12 @@ export interface AgentResponse {
   sessionId: string;
 }
 
+function detectLang(text: string): 'zh' | 'en' | 'other' {
+  if (/[\u4e00-\u9fa5]/.test(text)) return 'zh';
+  if (/[a-zA-Z]/.test(text)) return 'en';
+  return 'other';
+}
+
 async function getSessionById(
   supabaseClient: SupabaseClient,
   sessionId: string
@@ -178,14 +184,30 @@ export async function processUserMessage(
     }
   }
 
-  const systemInstructionParts: GeminiContentPart[] = [
-    {
-      text: 'You are a helpful assistant. Please answer questions based on the provided video context if available. If the user asks for a list or multiple points, please use a bulleted or numbered list for clarity.',
-    },
-  ];
+  const userLang = detectLang(userInput);
+  let langInstruction = '';
+  if (userLang === 'zh') langInstruction = '請以繁體中文回覆用戶問題。';
+  else if (userLang === 'en') langInstruction = 'Please answer in English.';
+
+  const systemInstructionParts: GeminiContentPart[] = [];
+  if (langInstruction) {
+    systemInstructionParts.push({ text: langInstruction });
+  }
+  systemInstructionParts.push({
+    text: `You are a helpful and concise assistant focused on answering questions based on the provided video context (including summary and subtitles).
+  
+  - Always reference the summary or subtitles when answering video-related questions.
+  - Use clear bullet points or numbered lists when the user requests a list or multiple points.
+  - If you lack sufficient information, politely inform the user you don't have enough context.
+  - Keep answers concise and direct unless a detailed explanation is requested.
+  - Do not fabricate information beyond the provided context.
+  `,
+  });
+
   if (videoContextText) {
     systemInstructionParts.push({ text: videoContextText });
   }
+
   const system_instruction: GeminiSystemInstruction = {
     parts: systemInstructionParts,
   };

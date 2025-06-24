@@ -31,6 +31,8 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
   const [currentSubtitles, setCurrentSubtitles] = useState<SubtitleEntry[]>(
     video.summary?.subtitles || []
   );
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [showLongLoadMessage, setShowLongLoadMessage] = useState(false);
 
   const { highlights, addHighlight, removeHighlight } = useHighlightsContext();
 
@@ -55,7 +57,22 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
     if (filteredSubtitles) {
       setSubtitleCount(filteredSubtitles.length);
     }
-  }, [filteredSubtitles]);
+
+    if (isInitialLoad) {
+      setIsInitialLoad(false);
+    }
+
+    const timer = setTimeout(() => {
+      if (
+        currentSubtitles.length === 0 &&
+        (video.status === 'pending' || video.status === 'processing')
+      ) {
+        setShowLongLoadMessage(true);
+      }
+    }, 20000);
+
+    return () => clearTimeout(timer);
+  }, [filteredSubtitles, isInitialLoad, currentSubtitles.length, video.status]);
 
   const handleHighlightCreate = useCallback(
     async (subtitle: SubtitleEntry) => {
@@ -147,18 +164,21 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
   };
 
   if (!currentSubtitles.length) {
+    const showFetching =
+      video.status === 'pending' || video.status === 'processing';
+    const message =
+      showFetching && !showLongLoadMessage
+        ? 'Fetching subtitles...'
+        : 'No subtitles available for this video. You can try adding them manually.';
+
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center text-gray-500">
-        <p className="mb-4">
-          {video.status === 'pending' || video.status === 'processing'
-            ? 'Fetching subtitles...'
-            : 'No subtitles available'}
-        </p>
+        <p className="mb-4 font-bold text-gray-600">{message}</p>
         <Button
           onClick={() => setShowEditModal(true)}
           variant="outline"
           className="flex items-center gap-2"
-          disabled={video.status === 'pending' || video.status === 'processing'}
+          disabled={showFetching && !showLongLoadMessage}
         >
           <Plus className="h-4 w-4" />
           Add Subtitles Manually
