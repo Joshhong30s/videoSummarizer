@@ -59,7 +59,7 @@ export async function POST(request: Request) {
         category_ids: params.categoryIds?.map(String),
         start_time: params.timeRange?.start,
         end_time: params.timeRange?.end,
-        user_id: userId,
+        p_user_id: userId,
         _page: params.page,
         _limit: params.limit,
       }
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
         category_ids: params.categoryIds?.map(String),
         start_time: params.timeRange?.start,
         end_time: params.timeRange?.end,
-        user_id: userId,
+        p_user_id: userId,
       });
 
     if (totalCountError) {
