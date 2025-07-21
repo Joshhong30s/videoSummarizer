@@ -1,9 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import type { VideoListItem, VideoSummary } from '@/lib/types';
-
-interface VideoDetail extends VideoListItem {
-  summary?: VideoSummary | null;
-}
+import type { VideoDetail } from '@/lib/types';
 
 export function useVideoDetail(videoId: string) {
   const [video, setVideo] = useState<VideoDetail | null>(null);

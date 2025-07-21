@@ -12,12 +12,16 @@ import { VideoSubmitForm } from '@/app/components/video/video-submit-form';
 import { CONTENT_TYPE_OPTIONS } from '@/lib/types/search';
 import { Loader2, MessageSquare } from 'lucide-react';
 import { useVideos } from '@/lib/contexts/videos-context';
+import { Button } from '@/app/components/ui/button';
 import { ClientVideoCard } from '@/app/components/video/client-video-card';
-import { Chatbot } from '@/app/components/chat/chatbot';
-import { FAB } from '@/app/components/ui/fab';
+import { ChatbotRefactored as Chatbot } from '@/app/components/chat/chatbot-refactored';
+import { SpeedDial } from '@/app/components/ui/speed-dial';
 import { Modal } from '@/app/components/ui/modal';
 import { CategoryTag } from '@/app/components/ui/category-tag';
-import { AppHeader } from '@/app/components/layout/app-header';
+import { AppHeaderEnhanced as AppHeader } from '@/app/components/layout/app-header-enhanced';
+import { EmptyState } from '@/app/components/ui/empty-state';
+import { ErrorBoundary } from '@/app/components/ui/error-boundary';
+import { Plus, Video } from 'lucide-react';
 
 export function HomePage() {
   const [mounted, setMounted] = useState(false);
@@ -96,9 +100,9 @@ export function HomePage() {
   });
 
   return (
-    <>
+    <ErrorBoundary>
       <AppHeader />
-      <div className="container mx-auto px-4 pt-4 pb-8 space-y-8">
+      <div className="container mx-auto px-4 py-8 space-y-8 max-w-7xl">
         <Modal
           isOpen={showAddVideoModal}
           onClose={() => setShowAddVideoModal(false)}
@@ -109,15 +113,23 @@ export function HomePage() {
           </div>
         </Modal>
 
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">Search</h2>
-          <SearchBar
-            query={query}
-            onQueryChange={setQuery}
-            contentTypes={contentTypes}
-            contentTypeOptions={CONTENT_TYPE_OPTIONS}
-            onContentTypesChange={setContentTypes}
-          />
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 p-8 shadow-lg">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-3xl"></div>
+          <div className="relative z-10">
+            <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+              Search Your Videos
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Find summaries, transcripts, and insights across all your videos
+            </p>
+            <SearchBar
+              query={query}
+              onQueryChange={setQuery}
+              contentTypes={contentTypes}
+              contentTypeOptions={CONTENT_TYPE_OPTIONS}
+              onContentTypesChange={setContentTypes}
+            />
+          </div>
         </div>
 
         {showSearchResults ? (
@@ -166,62 +178,81 @@ export function HomePage() {
             )}
           </div>
         ) : (
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <div className="mb-6">
-              <div className="flex flex-col space-y-6">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                  <h2 className="text-lg font-semibold whitespace-nowrap hidden sm:block">
-                    Video List
-                  </h2>
-                  <div className="flex gap-2 items-center w-full sm:w-auto justify-end">
-                    <select
-                      value={dateRange}
-                      onChange={e => setDateRange(e.target.value)}
-                      className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-                    >
-                      <option value="">All Time</option>
-                      <option value="week">This Week</option>
-                      <option value="month">This Month</option>
-                      <option value="year">This Year</option>
-                    </select>
-                    <select
-                      value={sort}
-                      onChange={e => setSort(e.target.value)}
-                      className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
-                    >
-                      <option value="">Newest</option>
-                      <option value="oldest">Oldest</option>
-                    </select>
-                  </div>
+          <div className="space-y-6">
+            {/* Filters Section */}
+            <div className="rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  Your Video Library
+                </h2>
+                <div className="flex gap-2 items-center">
+                  <select
+                    value={dateRange}
+                    onChange={e => setDateRange(e.target.value)}
+                    className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">All Time</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="year">This Year</option>
+                  </select>
+                  <select
+                    value={sort}
+                    onChange={e => setSort(e.target.value)}
+                    className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Newest</option>
+                    <option value="oldest">Oldest</option>
+                  </select>
                 </div>
-                <div className="flex flex-wrap gap-2 pb-2 border-b border-gray-100">
-                  {categories.map(category => (
-                    <button
-                      key={`${category.id}-${category.color}`}
-                      onClick={() => {
-                        if (categoryIds.includes(category.id)) {
-                          setCategoryIds(
-                            categoryIds.filter(id => id !== category.id)
-                          );
-                        } else {
-                          setCategoryIds([...categoryIds, category.id]);
-                        }
-                      }}
-                      className="group"
-                    >
-                      <CategoryTag
-                        category={category}
-                        selected={categoryIds.includes(category.id)}
-                      />
-                    </button>
-                  ))}
-                </div>
+              </div>
+
+              {/* Category Tags */}
+              <div className="flex flex-wrap gap-2">
+                <span className="text-sm text-gray-500 dark:text-gray-400 mr-2 py-1">
+                  Filter by:
+                </span>
+                {categories.map(category => (
+                  <button
+                    key={`${category.id}-${category.color}`}
+                    onClick={() => {
+                      if (categoryIds.includes(category.id)) {
+                        setCategoryIds(
+                          categoryIds.filter(id => id !== category.id)
+                        );
+                      } else {
+                        setCategoryIds([...categoryIds, category.id]);
+                      }
+                    }}
+                    className="transition-all duration-200"
+                  >
+                    <CategoryTag
+                      category={category}
+                      selected={categoryIds.includes(category.id)}
+                    />
+                  </button>
+                ))}
               </div>
             </div>
             {videosLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
               </div>
+            ) : filteredVideos.length === 0 ? (
+              <EmptyState
+                icon={<Video className="h-12 w-12" />}
+                title="No videos found"
+                description="Try adjusting your filters or add a new video to get started"
+                action={
+                  <Button
+                    onClick={() => setShowAddVideoModal(true)}
+                    variant="gradient"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Video
+                  </Button>
+                }
+              />
             ) : (
               <VideoCardGrid>
                 {filteredVideos.map(video => (
@@ -232,19 +263,26 @@ export function HomePage() {
           </div>
         )}
 
-        <FAB
-          onClick={() => setShowChatbot(true)}
-          icon={<MessageSquare size={24} />}
-          aria-label="Open chat"
-          className="bottom-6 right-6"
-        />
-        <FAB
-          onClick={() => setShowAddVideoModal(true)}
-          aria-label="Add new video"
-          className="bottom-24 right-6"
+        <SpeedDial
+          actions={[
+            {
+              id: 'chat',
+              icon: <MessageSquare size={20} />,
+              label: 'Open Chat',
+              onClick: () => setShowChatbot(true),
+              color: 'bg-green-600 dark:bg-green-500 text-white',
+            },
+            {
+              id: 'add-video',
+              icon: <Plus size={20} />,
+              label: 'Add Video',
+              onClick: () => setShowAddVideoModal(true),
+              color: 'bg-purple-600 dark:bg-purple-500 text-white',
+            },
+          ]}
         />
       </div>
       <Chatbot isOpen={showChatbot} onClose={() => setShowChatbot(false)} />
-    </>
+    </ErrorBoundary>
   );
 }

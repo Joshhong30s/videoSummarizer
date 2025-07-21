@@ -5,7 +5,7 @@ import { useHighlights } from '@/lib/hooks/video/use-highlights';
 import { useVideoPlayer } from '@/lib/contexts/video-player-context';
 import { formatTime } from '@/lib/utils/format-time';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit2, Play, Trash2, X } from 'lucide-react';
+import { Edit2, Play, Trash2, X, Bookmark } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface HighlightsDrawerProps {
@@ -74,13 +74,16 @@ export function HighlightsDrawer({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 20 }}
-            className="fixed right-0 top-0 bottom-0 w-96 max-w-full bg-white shadow-lg z-50 overflow-y-auto"
+            className="fixed right-0 top-0 bottom-0 w-96 max-w-full bg-background dark:bg-background shadow-2xl z-50 overflow-y-auto"
           >
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">Highlights</h2>
+            <div className="flex items-center justify-between p-4 border-b border-border bg-card">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Bookmark className="h-5 w-5 text-yellow-500" />
+                Highlights
+              </h2>
               <button
                 onClick={onClose}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-2 hover:bg-accent rounded-lg transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>

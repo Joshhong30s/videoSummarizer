@@ -4,65 +4,109 @@
 
 @layer base {
   :root {
+    /* Modern color scheme with better contrast and visual hierarchy */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
+    
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
+    
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+    
+    /* Modern blue with better contrast */
+    --primary: 220 90% 56%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Softer secondary colors */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 9% 46%;
+    
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    
+    --accent: 262 80% 60%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 220 90% 56%;
+    
+    --radius: 0.75rem;
+    
+    /* Additional modern colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    
+    --info: 201 90% 50%;
+    --info-foreground: 0 0% 100%;
+    
+    /* Gradient colors */
+    --gradient-primary-start: 220 90% 56%;
+    --gradient-primary-end: 262 80% 60%;
+    --gradient-secondary-start: 201 90% 50%;
+    --gradient-secondary-end: 220 90% 56%;
+    
+    /* Shadow colors */
+    --shadow-color: 220 9% 46%;
+    --shadow-opacity: 0.1;
   }
-
+  
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    /* Dark mode with better contrast */
+    --background: 222 47% 11%;
+    --foreground: 213 31% 91%;
+    
+    --card: 222 47% 13%;
+    --card-foreground: 213 31% 91%;
+    
+    --popover: 222 47% 15%;
+    --popover-foreground: 213 31% 91%;
+    
+    --primary: 220 90% 56%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 222 47% 18%;
+    --secondary-foreground: 213 31% 91%;
+    
+    --muted: 223 47% 20%;
+    --muted-foreground: 215 20% 65%;
+    
+    --accent: 262 80% 65%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 223 47% 20%;
+    --input: 223 47% 20%;
+    --ring: 220 90% 56%;
+    
+    /* Dark mode specific */
+    --success: 142 69% 45%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 100%;
+    
+    --info: 201 90% 55%;
+    --info-foreground: 0 0% 100%;
+    
+    /* Dark mode gradients */
+    --gradient-primary-start: 220 90% 60%;
+    --gradient-primary-end: 262 80% 70%;
+    --gradient-secondary-start: 201 90% 60%;
+    --gradient-secondary-end: 220 90% 60%;
+    
+    /* Shadow colors for dark mode */
+    --shadow-color: 0 0% 0%;
+    --shadow-opacity: 0.3;
   }
 }
 
@@ -106,4 +150,135 @@
 }
 .animate-fade-in {
   animation: fade-in 0.3s ease-out forwards;
+}
+
+/* Modern gradients */
+.gradient-primary {
+  background: linear-gradient(135deg, hsl(var(--gradient-primary-start)), hsl(var(--gradient-primary-end)));
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, hsl(var(--gradient-secondary-start)), hsl(var(--gradient-secondary-end)));
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--gradient-primary-start)), hsl(var(--gradient-primary-end)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass morphism */
+.glass {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background-color: hsl(var(--background) / 0.75);
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.glass-dark {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background-color: hsl(var(--card) / 0.6);
+  border: 1px solid hsl(var(--border) / 0.2);
+}
+
+/* Modern shadows */
+.shadow-soft {
+  box-shadow: 0 4px 20px hsl(var(--shadow-color) / var(--shadow-opacity));
+}
+
+.shadow-glow {
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.4);
+}
+
+/* Smooth transitions */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus states */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+  padding: 1em;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  text-decoration: none;
+  border-radius: var(--radius);
+}
+
+.skip-link:focus {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 1rem;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .gradient-primary,
+  .gradient-secondary {
+    background: hsl(var(--primary));
+  }
+  
+  .glass,
+  .glass-dark {
+    backdrop-filter: none;
+    background-color: hsl(var(--background));
+    border: 2px solid hsl(var(--foreground));
+  }
+}
+
+/* Modern hover effects */
+.hover-lift {
+  @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-lg;
+}
+
+.hover-scale {
+  @apply transition-transform duration-200 hover:scale-105;
+}
+
+/* Loading states */
+.skeleton-loading {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted) / 0.5) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

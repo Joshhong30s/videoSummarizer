@@ -15,12 +15,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-TW">
+    <html lang="en">
       <body>
+        <a href="#main-content" className="skip-link focus-ring">
+          Skip to main content
+        </a>
         <Providers>
           <CategoriesProvider>
             <VideosProvider>
-              <MainLayout>{children}</MainLayout>
+              <MainLayout>
+                <main id="main-content" tabIndex={-1}>
+                  {children}
+                </main>
+              </MainLayout>
             </VideosProvider>
           </CategoriesProvider>
         </Providers>

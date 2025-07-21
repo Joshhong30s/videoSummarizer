@@ -165,14 +165,15 @@ export function ClientVideoCard({ video }: ClientVideoCardProps) {
       )}
 
       <Link href={`/video/${video.id}`}>
-        <div className="group relative flex h-full flex-col overflow-hidden rounded-lg border bg-card transition-colors hover:border-primary">
+        <div className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          {/* Action buttons */}
           <div className="absolute right-2 top-2 z-10 flex gap-2">
             <button
               onClick={e => {
                 e.preventDefault();
                 setIsEditing(true);
               }}
-              className="rounded-full bg-blue-500 p-2 text-white opacity-0 transition-opacity group-hover:opacity-100"
+              className="rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-2 text-gray-700 dark:text-gray-300 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-white dark:hover:bg-gray-800 shadow-sm"
               title="Edit categories"
             >
               <svg
@@ -190,7 +191,7 @@ export function ClientVideoCard({ video }: ClientVideoCardProps) {
             </button>
             <button
               onClick={handleDelete}
-              className="rounded-full bg-red-500 p-2 text-white opacity-0 transition-opacity group-hover:opacity-100"
+              className="rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-2 text-red-600 dark:text-red-400 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/20 shadow-sm"
               title="Delete video"
             >
               <svg
@@ -207,7 +208,8 @@ export function ClientVideoCard({ video }: ClientVideoCardProps) {
             </button>
           </div>
 
-          <div className="relative aspect-video">
+          {/* Thumbnail */}
+          <div className="relative aspect-video bg-gray-100 dark:bg-gray-800">
             {getThumbnailUrl() && (
               <Image
                 src={getThumbnailUrl()}
@@ -216,34 +218,65 @@ export function ClientVideoCard({ video }: ClientVideoCardProps) {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 quality={85}
                 priority={false}
-                className="object-cover"
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
                 onError={handleImageError}
               />
             )}
+            {/* Play overlay on hover */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors duration-300">
+              <div className="w-16 h-16 rounded-full bg-white/90 dark:bg-gray-900/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
+                <svg
+                  className="w-8 h-8 text-gray-900 dark:text-white ml-1"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-1 flex-col p-4">
-            <h3 className="line-clamp-2 text-lg font-medium group-hover:text-primary">
+          {/* Content */}
+          <div className="flex flex-1 flex-col p-4 space-y-3">
+            <h3 className="line-clamp-2 text-base font-semibold text-gray-900 dark:text-gray-100 group-hover:text-primary transition-colors">
               {video.title}
             </h3>
 
-            <div className="mt-2 flex items-center justify-between">
-              <time className="text-xs text-gray-500">
-                {formatDate(video.published_at || video.created_at)}
-              </time>
+            <div className="mt-auto space-y-2">
+              {/* Categories */}
               {selectedCategories.length > 0 && (
-                <div
-                  className="flex flex-wrap gap-1 justify-end"
-                  style={{ maxWidth: '60%' }}
-                >
-                  {selectedCategories.map(category => (
+                <div className="flex flex-wrap gap-1">
+                  {selectedCategories.slice(0, 3).map(category => (
                     <CategoryTag
                       key={`${category.id}-${category.color}`}
                       category={category}
                     />
                   ))}
+                  {selectedCategories.length > 3 && (
+                    <span className="px-2 py-0.5 text-xs text-gray-500 dark:text-gray-400">
+                      +{selectedCategories.length - 3}
+                    </span>
+                  )}
                 </div>
               )}
+
+              {/* Date */}
+              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                <svg
+                  className="w-3.5 h-3.5 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                {formatDate(video.published_at || video.created_at)}
+              </div>
             </div>
           </div>
         </div>

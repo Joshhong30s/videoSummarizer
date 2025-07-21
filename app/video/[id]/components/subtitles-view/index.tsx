@@ -5,6 +5,7 @@ import { useHighlightsContext } from '@/lib/contexts/highlights-context';
 import { useSubtitleTranslation } from '@/lib/hooks/video/use-subtitle-translation';
 import { useSubtitleRange } from '@/lib/hooks/video/use-subtitle-range';
 import { SubtitleLine } from './subtitle-line';
+import { SubtitleLineCompact } from './subtitle-line-compact';
 import { Button } from '@/app/components/ui/button';
 import { Languages, Loader2, Copy, FileText, Upload, Plus } from 'lucide-react';
 import { SubtitleEditor } from '@/app/components/video/subtitle-editor';
@@ -33,6 +34,7 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
   );
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showLongLoadMessage, setShowLongLoadMessage] = useState(false);
+  const [compactMode, setCompactMode] = useState(false);
 
   const { highlights, addHighlight, removeHighlight } = useHighlightsContext();
 
@@ -196,12 +198,12 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
 
   return (
     <div className="space-y-4">
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
         <div className="flex justify-between items-center mb-2">
-          <p className="text-sm font-medium text-gray-700">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Select time range (minutes): {range[0]} - {range[1]}
           </p>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             {subtitleCount} subtitles selected
           </span>
         </div>
@@ -240,17 +242,31 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b">
-        <div className="flex items-center gap-4">
-          <input
-            type="checkbox"
-            id="show-translation"
-            checked={showTranslation}
-            onChange={e => setShowTranslation(e.target.checked)}
-            className="rounded"
-          />
-          <label htmlFor="show-translation" className="text-sm text-gray-600">
-            Show Translation
-          </label>
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="show-translation"
+              checked={showTranslation}
+              onChange={e => setShowTranslation(e.target.checked)}
+              className="rounded"
+            />
+            <label htmlFor="show-translation" className="text-sm text-gray-600 dark:text-gray-400">
+              Show Translation
+            </label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="compact-mode"
+              checked={compactMode}
+              onChange={e => setCompactMode(e.target.checked)}
+              className="rounded"
+            />
+            <label htmlFor="compact-mode" className="text-sm text-gray-600 dark:text-gray-400">
+              Compact View
+            </label>
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-2 relative overflow-x-auto w-full sm:w-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
@@ -326,21 +342,40 @@ export function SubtitlesView({ video }: SubtitlesViewProps) {
         </div>
       </div>
 
-      <div className="space-y-1">
-        {filteredSubtitles.map(subtitle => (
-          <SubtitleLine
-            key={subtitle.start}
-            subtitle={subtitle}
-            translation={
-              showTranslation ? getTranslation(subtitle.start) : null
-            }
-            highlighted={highlights.some(
-              (h: Highlight) => h.start_offset === Math.floor(subtitle.start)
-            )}
-            onHighlight={() => handleHighlightCreate(subtitle)}
-            onUnhighlight={() => handleHighlightDelete(subtitle.start)}
-          />
-        ))}
+      <div className="relative">
+        {/* Compact view header */}
+        {showTranslation && (
+          <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 mb-2 -mx-4 px-4 py-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 text-xs font-medium text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-2">
+                <span className="w-16"></span>
+                <span>Original</span>
+              </div>
+              <div className="hidden lg:block pl-6">Translation</div>
+            </div>
+          </div>
+        )}
+        
+        {/* Subtitle lines with improved spacing */}
+        <div className={compactMode ? "space-y-0" : "space-y-0 divide-y divide-gray-100 dark:divide-gray-800"}>
+          {filteredSubtitles.map((subtitle, index) => {
+            const SubtitleComponent = compactMode ? SubtitleLineCompact : SubtitleLine;
+            return (
+              <SubtitleComponent
+                key={subtitle.start}
+                subtitle={subtitle}
+                translation={
+                  showTranslation ? getTranslation(subtitle.start) : null
+                }
+                highlighted={highlights.some(
+                  (h: Highlight) => h.start_offset === Math.floor(subtitle.start)
+                )}
+                onHighlight={() => handleHighlightCreate(subtitle)}
+                onUnhighlight={() => handleHighlightDelete(subtitle.start)}
+              />
+            );
+          })}
+        </div>
       </div>
 
       {showImportModal && (

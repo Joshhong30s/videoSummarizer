@@ -20,5 +20,11 @@ export { IconButton } from './icon-button';
 export { SearchButton } from './search-button';
 export { SortButton } from './sort-button';
 export { Tooltip } from './tooltip';
+export { SpeedDial } from './speed-dial';
+export { FAB } from './fab';
+export { EmptyState } from './empty-state';
+export { ErrorBoundary } from './error-boundary';
+export { ScreenReaderAnnouncement, announce } from './screen-reader-announcement';
+export { ThemeToggle, ThemeToggleSimple } from './theme-toggle';
 
 export type { CategoryTagProps } from './category-tag';

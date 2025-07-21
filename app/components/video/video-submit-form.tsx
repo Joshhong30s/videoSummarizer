@@ -41,26 +41,29 @@ export function VideoSubmitForm({ onSuccess }: VideoSubmitFormProps) {
   }));
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <div className="flex-1">
-          <input
-            type="text"
-            value={url}
-            onChange={e => setUrl(e.target.value)}
-            placeholder="Post a YouTube URL"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            disabled={isLoading}
-          />
-          {error && (
-            <p className="mt-1 text-sm text-destructive">{error.message}</p>
-          )}
-        </div>
-        <Button type="submit" disabled={isLoading || !url.trim()}>
-          {isLoading ? 'Processing' : 'Add New Video'}
-        </Button>
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          YouTube URL
+        </label>
+        <input
+          type="text"
+          value={url}
+          onChange={e => setUrl(e.target.value)}
+          placeholder="https://www.youtube.com/watch?v=..."
+          className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          disabled={isLoading}
+          autoFocus
+        />
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-400">{error.message}</p>
+        )}
+      </div>
+      
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Categories (optional)
+        </label>
         <Select
           value={selectedCategories}
           options={categoryOptions}
@@ -70,6 +73,16 @@ export function VideoSubmitForm({ onSuccess }: VideoSubmitFormProps) {
           allowManage={true}
           onCategoriesChange={handleCategoriesChange}
         />
+      </div>
+      
+      <div className="pt-4">
+        <Button 
+          type="submit" 
+          disabled={isLoading || !url.trim()}
+          className="w-full"
+        >
+          {isLoading ? 'Processing...' : 'Add Video'}
+        </Button>
       </div>
     </form>
   );
