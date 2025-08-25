@@ -53,3 +53,10 @@ yarn-error.log*
 .npm/
 
 # Results
+
+# Claude Code
+.claude/
+.mcp.json
+
+# markdown
+*.md

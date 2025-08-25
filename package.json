@@ -49,6 +49,7 @@
     "zod": "^3.25.51"
   },
   "devDependencies": {
+    "@supabase/mcp-server-supabase": "^0.4.5",
     "@types/he": "^1.2.3",
     "@types/lodash": "^4.17.17",
     "@types/node": "^20.19.0",
