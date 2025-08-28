@@ -2,20 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { useVideoDetail } from '@/lib/hooks/video/use-video-detail';
-import { VideoPlayerEnhanced } from './components/video-player-enhanced';
-import { VideoInfoEnhanced } from './components/video-info-enhanced';
-import { VideoTabsEnhanced } from './components/video-tabs-enhanced';
+import { VideoPlayer } from './components/video-player';
+import { VideoInfo } from './components/video-info';
+import { VideoTabs } from './components/video-tabs';
+import { VideoSidePanel } from './components/video-side-panel';
 import { BackButton } from './components/back-button';
 import { VideoPlayerProvider } from '@/lib/contexts/video-player-context';
 import { HighlightsProvider } from '@/lib/contexts/highlights-context';
 import { VideoNotesProvider } from '@/lib/contexts/video-notes-context';
-import { ChatbotRefactored as Chatbot } from '@/app/components/chat/chatbot-refactored';
+import { Chatbot } from '@/app/components/chat/chatbot';
 import { SpeedDial } from '@/app/components/ui/speed-dial';
-import { MessageSquare, Bookmark } from 'lucide-react';
+import { MessageSquare, Bookmark, Share2, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ErrorBoundary } from '@/app/components/ui/error-boundary';
 import { Skeleton } from '@/app/components/ui/skeleton';
-import { HighlightsDrawer } from './components/highlights-drawer';
 
 interface VideoPageProps {
   params: {
@@ -69,7 +69,7 @@ function VideoPageError({ error }: { error: Error }) {
   );
 }
 
-export default function VideoPage({ params }: VideoPageProps) {
+export default function VideoPageEnhanced({ params }: VideoPageProps) {
   const { video, loading, error, refetch } = useVideoDetail(params.id);
   const [showChatbot, setShowChatbot] = useState(false);
   const [chatSessionId, setChatSessionId] = useState<string | undefined>();
@@ -97,7 +97,7 @@ export default function VideoPage({ params }: VideoPageProps) {
       <VideoPlayerProvider>
         <HighlightsProvider videoId={video.id}>
           <VideoNotesProvider videoId={video.id}>
-            <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black">
+            <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 dark:from-background dark:to-background">
               <div className="container mx-auto px-4 py-6 lg:py-8">
                 {/* Back button with animation */}
                 <motion.div
@@ -108,38 +108,57 @@ export default function VideoPage({ params }: VideoPageProps) {
                   <BackButton />
                 </motion.div>
 
-                {/* Main content - single column with improved design */}
-                <div className="max-w-5xl mx-auto space-y-6">
-                  {/* Video player section with dark background */}
+                {/* Main content grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                  {/* Left column - Main content */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="rounded-xl overflow-hidden shadow-2xl bg-black"
+                    className="lg:col-span-2 space-y-6"
                   >
-                    <VideoPlayerEnhanced
-                      videoId={video.youtube_id}
-                      videoDbId={video.id}
-                    />
+                    {/* Enhanced video player with timeline */}
+                    <div className="rounded-xl overflow-hidden shadow-2xl bg-card dark:bg-card/50 backdrop-blur-sm">
+                      <VideoPlayer
+                        videoId={video.youtube_id}
+                        videoDbId={video.id}
+                      />
+                    </div>
+
+                    {/* Video info card */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="rounded-xl shadow-lg"
+                    >
+                      <VideoInfo video={video} />
+                    </motion.div>
+
+                    {/* Enhanced tabs */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <VideoTabs
+                        video={video}
+                        onVideoUpdate={refetch}
+                      />
+                    </motion.div>
                   </motion.div>
 
-                  {/* Video info - refined */}
+                  {/* Right column - Side panel */}
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
+                    className="space-y-6"
                   >
-                    <VideoInfoEnhanced video={video} />
-                  </motion.div>
-
-                  {/* Content tabs with better styling */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="rounded-xl shadow-lg overflow-hidden"
-                  >
-                    <VideoTabsEnhanced video={video} onVideoUpdate={refetch} />
+                    <VideoSidePanel
+                      video={video}
+                      onShowHighlights={() => setShowHighlights(true)}
+                    />
                   </motion.div>
                 </div>
               </div>
@@ -162,14 +181,28 @@ export default function VideoPage({ params }: VideoPageProps) {
                     color: 'bg-purple-600 dark:bg-purple-500 text-white',
                     badge: video.highlights_count || 0,
                   },
+                  {
+                    id: 'share',
+                    icon: <Share2 size={20} />,
+                    label: 'Share',
+                    onClick: () => {
+                      navigator.share({
+                        title: video.title,
+                        url: window.location.href,
+                      });
+                    },
+                    color: 'bg-blue-600 dark:bg-blue-500 text-white',
+                  },
+                  {
+                    id: 'download',
+                    icon: <Download size={20} />,
+                    label: 'Export',
+                    onClick: () => {
+                      // TODO: Implement export functionality
+                    },
+                    color: 'bg-gray-600 dark:bg-gray-500 text-white',
+                  },
                 ]}
-              />
-
-              {/* Highlights Drawer */}
-              <HighlightsDrawer
-                videoId={video.id}
-                isOpen={showHighlights}
-                onClose={() => setShowHighlights(false)}
               />
 
               {/* Chatbot */}

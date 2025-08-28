@@ -8,7 +8,7 @@ import { CategoryTag } from '../ui/category-tag';
 import { cn } from '@/lib/utils/cn';
 import { Skeleton } from '../ui/skeleton';
 import { useMemo } from 'react';
-import { useCategories } from '@/lib/hooks/use-categories';
+import { useCategories } from '@/lib/contexts/categories-context';
 
 interface VideoCardProps {
   video: VideoListItem;

@@ -1,18 +1,18 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useVideos } from '@/lib/hooks/use-videos';
+import { useVideos } from '@/lib/contexts/videos-context';
 
 interface VideoSidebarProps {
   video_id: string; // Use video_id instead of videoId to match database naming
 }
 
 export function VideoSidebar({ video_id }: VideoSidebarProps) {
-  const { videos, loading, error } = useVideos();
+  const { videos, isLoading, error } = useVideos();
 
   const relatedVideos = videos?.filter(v => v.id !== video_id) || [];
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (

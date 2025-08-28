@@ -14,3 +14,20 @@ export function formatDateTime(date: string) {
     minute: 'numeric',
   });
 }
+
+// Re-export utility functions
+export * from './cn';
+export * from './format-time';
+export * from './highlight-colors';
+export * from './highlight-text';
+export * from './subtitle-chunking';
+export * from './url-validation';
+export * from './youtube';
+
+// Re-export time conversion functions with explicit naming
+export {
+  secondsToMinutes,
+  formatTimeToMinutes,
+  formatTimeToSeconds,
+  formatSecondsToTime,
+} from './time-conversion';
