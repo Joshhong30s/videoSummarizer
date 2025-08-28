@@ -169,7 +169,9 @@ export async function POST(
 
     const { error: insertError } = await supabaseAdmin
       .from('summaries')
-      .upsert(summaryData);
+      .upsert(summaryData, {
+        onConflict: 'video_id,user_id'
+      });
 
     if (insertError) {
       console.error('Failed to save summary:', insertError);

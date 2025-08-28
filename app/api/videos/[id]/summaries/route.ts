@@ -44,10 +44,12 @@ export async function POST(
 
     const { error: summaryError } = await supabaseAdmin
       .from('summaries')
-      .insert({
+      .upsert({
         video_id: params.id,
         user_id: userId,
         subtitles,
+      }, {
+        onConflict: 'video_id,user_id'
       });
 
     if (summaryError) {

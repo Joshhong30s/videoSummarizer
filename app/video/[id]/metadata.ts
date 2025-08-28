@@ -41,7 +41,9 @@ export async function generateMetadata({
       .from('summaries')
       .select('*')
       .eq('video_id', params.id)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     let description = 'No summary available yet.';
     if (summary?.en_summary) {
