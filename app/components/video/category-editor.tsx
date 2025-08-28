@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useCategories } from '@/lib/hooks/use-categories';
+import { useCategories } from '@/lib/contexts/categories-context';
 import { Button } from '@/app/components/ui/button';
 import { Plus, Save, X, Edit2, Loader2 } from 'lucide-react';
 import { Category } from '@/lib/types';

@@ -130,11 +130,11 @@
 @keyframes animate-in {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateX(var(--tw-translate-x)) translateY(calc(var(--tw-translate-y) - 10px)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(var(--tw-translate-x)) translateY(var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
   }
 }
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useCategories } from '@/lib/contexts/categories-context';
-import { AppHeaderEnhanced as AppHeader } from '@/app/components/layout/app-header-enhanced';
+import { AppHeader } from '@/app/components/layout/app-header';
 import { Button } from '@/app/components/ui/button';
 import { CategoryTag } from '@/app/components/ui/category-tag';
 import { Plus, Edit2, Trash2, Check, X } from 'lucide-react';

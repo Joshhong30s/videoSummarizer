@@ -1,4 +1,4 @@
-import { useCategories } from '@/lib/hooks/use-categories';
+import { useCategories } from '@/lib/contexts/categories-context';
 import { ContentType } from '@/lib/types/search';
 
 interface SearchFiltersProps {

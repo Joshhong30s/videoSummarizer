@@ -2,14 +2,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { VideoCardSkeleton } from '@/app/components/video/video-card';
 import type { VideoListItem } from '@/lib/types';
-import { useVideos } from '@/lib/hooks/use-videos';
+import { useVideos } from '@/lib/contexts/videos-context';
 
 interface VideoSidebarProps {
   currentId?: string;
 }
 
 export function VideoSidebar({ currentId }: VideoSidebarProps) {
-  const { videos, loading: isLoading } = useVideos();
+  const { videos, isLoading } = useVideos();
 
   if (isLoading) {
     return (

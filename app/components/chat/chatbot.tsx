@@ -3,7 +3,10 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Mic, StopCircle, Copy } from 'lucide-react';
+import { Mic, StopCircle, Copy, X, Maximize2, Minimize2, Send, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils/cn';
+import { Button } from '../ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ChatMessage {
   id: string;
@@ -19,28 +22,35 @@ interface ChatbotProps {
   contextMetadata?: Record<string, any>;
 }
 
+function LoadingDots() {
+  return (
+    <div className="flex items-center gap-1">
+      <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
+      <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
+      <div className="h-2 w-2 animate-bounce rounded-full bg-primary" />
+    </div>
+  );
+}
+
 export function Chatbot({
   isOpen,
   onClose,
   initialSessionId,
   contextMetadata,
 }: ChatbotProps) {
-  const [sessionId, setSessionId] = useState<string | undefined>(
-    initialSessionId
-  );
+  const [sessionId, setSessionId] = useState<string | undefined>(initialSessionId);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
-  const [recognitionLang, setRecognitionLang] = useState<'zh-TW' | 'en-US'>(
-    'zh-TW'
-  );
-  const [isWide, setIsWide] = useState(false);
+  const [recognitionLang, setRecognitionLang] = useState<'zh-TW' | 'en-US'>('zh-TW');
+  const [isExpanded, setIsExpanded] = useState(false);
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
 
   const speechRecognitionRef = useRef<any | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -57,7 +67,7 @@ export function Chatbot({
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
     if (!SpeechRecognitionAPI) {
-      setError('voice recognition is not supported in this browser.');
+      setError('Voice recognition is not supported in this browser.');
       return;
     }
     if (isListening && speechRecognitionRef.current) {
@@ -80,13 +90,13 @@ export function Chatbot({
       };
 
       recognition.onerror = (event: any) => {
-        let errorMessage = 'error occurred during speech recognition.';
+        let errorMessage = 'Error occurred during speech recognition.';
         if (event.error === 'no-speech')
-          errorMessage = 'no speech was detected.';
+          errorMessage = 'No speech was detected.';
         else if (event.error === 'audio-capture')
-          errorMessage = 'cannot capture audio.';
+          errorMessage = 'Cannot capture audio.';
         else if (event.error === 'not-allowed')
-          errorMessage = 'permission to use microphone was denied.';
+          errorMessage = 'Permission to use microphone was denied.';
         setError(errorMessage);
         setIsListening(false);
       };
@@ -97,7 +107,7 @@ export function Chatbot({
       try {
         recognition.start();
       } catch (err) {
-        setError('failed to start speech recognition.');
+        setError('Failed to start speech recognition.');
         setIsListening(false);
       }
     }
@@ -108,7 +118,6 @@ export function Chatbot({
     async function fetchHistory() {
       const res = await fetch(`/api/chat/messages?sessionId=${sessionId}`);
       const data = await res.json();
-      // 加入 createdAt 時間（前端 fallback 用 Date.now，或後端提供）
       setMessages(
         data.map((msg: any) => ({
           ...msg,
@@ -129,12 +138,10 @@ export function Chatbot({
     };
   }, []);
 
-  const handleToggleWidth = () => setIsWide(w => !w);
-
   const handleCopy = (content: string, id: string) => {
     navigator.clipboard.writeText(content);
     setCopiedMsgId(id);
-    setTimeout(() => setCopiedMsgId(null), 1200);
+    setTimeout(() => setCopiedMsgId(null), 2000);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -193,241 +200,211 @@ export function Chatbot({
       setMessages(prevMessages => [...prevMessages, errorMessage]);
     } finally {
       setIsLoading(false);
+      inputRef.current?.focus();
     }
   };
 
-  // 時間格式化（只顯示時間 HH:MM 或日期+時間）
   const formatTime = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleString('zh-TW', {
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    
+    if (isToday) {
+      return d.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      month: '2-digit',
-      day: '2-digit',
     });
   };
 
-  const messagesContainerStyle: React.CSSProperties = {
-    flexGrow: 1,
-    padding: '10px',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-  };
-
-  const messageStyle = (role: 'user' | 'assistant'): React.CSSProperties => ({
-    padding: '8px 12px',
-    borderRadius: '18px',
-    maxWidth: '70%',
-    wordBreak: 'break-word',
-    whiteSpace: 'pre-line',
-    alignSelf: role === 'user' ? 'flex-end' : 'flex-start',
-    backgroundColor: role === 'user' ? '#007bff' : '#e9ecef',
-    color: role === 'user' ? 'white' : 'black',
-    marginBottom: 6,
-  });
-
-  const formStyle: React.CSSProperties = {
-    display: 'flex',
-    padding: '10px',
-    borderTop: '1px solid #ccc',
-  };
-
-  const inputStyle: React.CSSProperties = {
-    flexGrow: 1,
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '20px',
-    marginRight: '10px',
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    padding: '10px 15px',
-    border: 'none',
-    backgroundColor: '#007bff',
-    color: 'white',
-    borderRadius: '20px',
-    cursor: 'pointer',
-  };
-
-  if (!isOpen) return null;
-
   return (
-    <div
-      className={`
-        chatbot-container fixed z-50 bg-white dark:bg-gray-800 flex flex-col overflow-hidden
-        bottom-0 left-0 right-0 w-full h-[85vh] rounded-t-xl shadow-2xl border-t border-gray-300 dark:border-gray-700
-        md:bottom-5 md:right-5 md:left-auto md:top-auto 
-        ${isWide ? 'md:w-[800px]' : 'md:w-[400px]'}
-        md:h-[500px] md:rounded-lg md:shadow-xl md:border 
-        ${isOpen ? 'flex' : 'hidden'} 
-      `}
-    >
-      <div
-        style={{
-          padding: '10px',
-          borderBottom: '1px solid #eee',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>Chat</h3>
-        <div>
-          <button
-            onClick={handleToggleWidth}
-            title={isWide ? 'original width' : '2x width'}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
-              marginRight: '10px',
-              lineHeight: 1,
-            }}
-          >
-            ⇔
-          </button>
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Mobile backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '20px',
-              cursor: 'pointer',
-              padding: '0 5px',
-            }}
-            aria-label="Close chat"
-          >
-            &times;
-          </button>
-        </div>
-      </div>
-
-      <div style={messagesContainerStyle} className="chatbot-messages">
-        {messages.map((msg, i) => (
-          <div
-            key={msg.id}
-            style={{ ...messageStyle(msg.role), position: 'relative' }}
-            className={`message message-${msg.role}`}
-          >
-            {msg.role === 'assistant' ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {msg.content}
-              </ReactMarkdown>
-            ) : (
-              msg.content
+            className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-40 lg:hidden"
+          />
+          
+          <motion.div
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className={cn(
+              'fixed z-50 flex flex-col overflow-hidden shadow-2xl',
+              'bottom-0 left-0 right-0 h-[85vh] rounded-t-2xl',
+              'lg:bottom-6 lg:right-6 lg:left-auto lg:h-[600px] lg:rounded-2xl',
+              'bg-background border border-border',
+              isExpanded ? 'lg:w-[800px]' : 'lg:w-[450px]',
+              'transition-all duration-300'
             )}
-          </div>
-        ))}
-
-        {isLoading && (
-          <div
-            style={{
-              ...messageStyle('assistant'),
-              opacity: 0.7,
-              fontStyle: 'italic',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-              minHeight: '36px',
-              background: '#e9ecef',
-              color: '#333',
-              marginTop: 4,
-            }}
-            className="message message-assistant animate-pulse"
           >
-            <LoadingDots />
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-      {error && (
-        <div style={{ padding: '10px', color: 'red', textAlign: 'center' }}>
-          Error: {error}
-        </div>
-      )}
-      <form
-        onSubmit={handleSubmit}
-        style={formStyle}
-        className="chatbot-form items-center"
-      >
-        <button
-          type="button"
-          onClick={handleToggleRecognitionLang}
-          disabled={isLoading || isListening}
-          title={`Switch to ${recognitionLang === 'zh-TW' ? 'English' : 'Chinese (Traditional)'} input`}
-          className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors mr-2"
-          style={{ flexShrink: 0 }}
-        >
-          {recognitionLang === 'zh-TW' ? 'EN' : '中'}
-        </button>
-        <button
-          type="button"
-          onClick={handleToggleListening}
-          disabled={isLoading && !isListening}
-          title={isListening ? 'Stop voice input' : 'Start voice input'}
-          className={`p-2 rounded-full transition-colors mr-2 ${
-            isListening
-              ? 'bg-red-500 text-white hover:bg-red-600'
-              : 'hover:bg-gray-200 dark:hover:bg-gray-700'
-          }`}
-          style={{ flexShrink: 0 }}
-        >
-          {isListening ? <StopCircle size={20} /> : <Mic size={20} />}
-        </button>
-        <input
-          type="text"
-          value={userInput}
-          onChange={e => setUserInput(e.target.value)}
-          placeholder={isListening ? 'Listening...' : 'Type your message...'}
-          style={inputStyle}
-          disabled={isLoading}
-          className="chatbot-input"
-        />
-        <button
-          type="submit"
-          disabled={isLoading || !userInput.trim()}
-          style={buttonStyle}
-          className="chatbot-submit"
-        >
-          {isLoading && !isListening ? 'Sending...' : 'Send'}
-        </button>
-      </form>
-    </div>
-  );
-}
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
+              <h3 className="text-lg font-semibold">AI Assistant</h3>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="hidden lg:flex"
+                >
+                  {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClose}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
 
-function LoadingDots() {
-  return (
-    <span style={{ display: 'inline-block', minWidth: 40 }}>
-      <span
-        className="dot"
-        style={{ animation: 'dot-blink 1.2s infinite', animationDelay: '0s' }}
-      >
-        .
-      </span>
-      <span
-        className="dot"
-        style={{ animation: 'dot-blink 1.2s infinite', animationDelay: '0.2s' }}
-      >
-        .
-      </span>
-      <span
-        className="dot"
-        style={{ animation: 'dot-blink 1.2s infinite', animationDelay: '0.4s' }}
-      >
-        .
-      </span>
-      <style>
-        {`
-        @keyframes dot-blink {
-          0%, 80%, 100% { opacity: 0.2; }
-          40% { opacity: 1; }
-        }
-        `}
-      </style>
-    </span>
+            {/* Messages container */}
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              <div className="flex flex-col gap-4">
+                {messages.map((msg) => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={cn(
+                      'flex gap-3',
+                      msg.role === 'user' ? 'justify-end' : 'justify-start'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'relative max-w-[80%] rounded-2xl px-4 py-2.5',
+                        msg.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-foreground',
+                        msg.role === 'assistant' &&
+                          'prose prose-sm dark:prose-invert max-w-none'
+                      )}
+                    >
+                      {msg.role === 'assistant' ? (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      ) : (
+                        <p className="whitespace-pre-wrap break-words">
+                          {msg.content}
+                        </p>
+                      )}
+                      
+                      {msg.createdAt && (
+                        <span className={cn(
+                          'text-xs mt-1 block',
+                          msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                        )}>
+                          {formatTime(msg.createdAt)}
+                        </span>
+                      )}
+                      
+                      {msg.role === 'assistant' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCopy(msg.content, msg.id)}
+                          className="absolute -bottom-8 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Copy className="h-3 w-3" />
+                          {copiedMsgId === msg.id && <span className="ml-1 text-xs">Copied!</span>}
+                        </Button>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+                
+                {isLoading && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex justify-start"
+                  >
+                    <div className="bg-muted rounded-2xl px-4 py-3">
+                      <LoadingDots />
+                    </div>
+                  </motion.div>
+                )}
+                
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+
+            {/* Error message */}
+            {error && (
+              <div className="mx-4 mb-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Input form */}
+            <form
+              onSubmit={handleSubmit}
+              className="flex items-center gap-2 px-4 py-3 border-t border-border bg-card"
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleToggleRecognitionLang}
+                disabled={isLoading || isListening}
+                className="hidden sm:flex"
+              >
+                {recognitionLang === 'zh-TW' ? 'EN' : '中'}
+              </Button>
+              
+              <Button
+                type="button"
+                variant={isListening ? 'destructive' : 'ghost'}
+                size="icon"
+                onClick={handleToggleListening}
+                disabled={isLoading && !isListening}
+              >
+                {isListening ? <StopCircle className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
+              
+              <input
+                ref={inputRef}
+                type="text"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                placeholder={isListening ? 'Listening...' : 'Type your message...'}
+                disabled={isLoading}
+                className="flex-1 bg-background border border-input rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
+              />
+              
+              <Button
+                type="submit"
+                size="icon"
+                disabled={isLoading || !userInput.trim()}
+                className="rounded-full"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </form>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

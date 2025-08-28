@@ -29,7 +29,7 @@ export const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" />
           <Dialog.Content
             className={cn(
-              'fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-white dark:bg-gray-800 p-6 shadow-lg',
+              'fixed left-[50%] top-[50%] z-50 w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] rounded-lg border bg-white dark:bg-gray-800 p-6 shadow-lg',
               'animate-in fade-in-0 zoom-in-95 duration-200',
               'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:duration-150',
               className
