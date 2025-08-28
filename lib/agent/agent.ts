@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '../supabase';
+import { supabaseAdmin } from '../supabase-admin';
 import {
   ChatSession,
   createChatSession,
@@ -120,7 +121,7 @@ export async function processUserMessage(
     let videoSummaryText: string | null = null;
     let fullSubtitlesText: string | null = null;
     try {
-      const { data: videoInfo, error: videoInfoError } = await supabase
+      const { data: videoInfo, error: videoInfoError } = await supabaseAdmin
         .from('videos')
         .select('title')
         .eq('id', currentVideoId)
@@ -134,10 +135,12 @@ export async function processUserMessage(
         console.warn(
           `Video with ID ${currentVideoId} not found in 'videos' table.`
         );
-      const { data: summaryResults, error: summaryError } = await supabase
+      const { data: summaryResults, error: summaryError } = await supabaseAdmin
         .from('summaries')
         .select('en_summary, zh_summary, subtitles')
-        .eq('video_id', currentVideoId);
+        .eq('video_id', currentVideoId)
+        .order('created_at', { ascending: false })
+        .limit(1);
       if (summaryError)
         console.warn(
           `Database error when fetching summary/subtitles for video ${currentVideoId}: ${summaryError.message}`

@@ -4,27 +4,35 @@ import { SubtitleEntry } from '@/lib/types';
 
 async function mergeSummarySubtitles(
   videoId: string,
-  newSubtitles: SubtitleEntry[]
+  newSubtitles: SubtitleEntry[],
+  userId?: string
 ) {
   const { data: summary, error: fetchError } = await supabase
     .from('summaries')
     .select('subtitles')
     .eq('video_id', videoId)
-    .single();
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   if (fetchError) {
-    if (fetchError.code === 'PGRST116') {
-      const { error: insertError } = await supabase.from('summaries').insert({
+    throw fetchError;
+  }
+
+  if (!summary) {
+    const { error: upsertError } = await supabase.from('summaries').upsert(
+      {
         video_id: videoId,
         subtitles: newSubtitles,
-        en_summary: '',
-        zh_summary: '',
-      });
+        user_id: userId,
+      },
+      {
+        onConflict: 'video_id,user_id',
+      }
+    );
 
-      if (insertError) throw insertError;
-      return newSubtitles;
-    }
-    throw fetchError;
+    if (upsertError) throw upsertError;
+    return newSubtitles;
   }
 
   const existingSubtitles = summary?.subtitles || [];
@@ -44,10 +52,16 @@ async function mergeSummarySubtitles(
 
   mergedSubtitles.sort((a, b) => a.start - b.start);
 
-  const { error: updateError } = await supabase
-    .from('summaries')
-    .update({ subtitles: mergedSubtitles })
-    .eq('video_id', videoId);
+  const { error: updateError } = await supabase.from('summaries').upsert(
+    {
+      video_id: videoId,
+      subtitles: mergedSubtitles,
+      user_id: userId,
+    },
+    {
+      onConflict: 'video_id,user_id',
+    }
+  );
 
   if (updateError) throw updateError;
 
@@ -59,7 +73,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { subtitles } = await request.json();
+    const { subtitles, userId } = await request.json();
     const { id: videoId } = params;
 
     if (!Array.isArray(subtitles)) {
@@ -69,7 +83,11 @@ export async function PATCH(
       );
     }
 
-    const updatedSubtitles = await mergeSummarySubtitles(videoId, subtitles);
+    const updatedSubtitles = await mergeSummarySubtitles(
+      videoId,
+      subtitles,
+      userId
+    );
 
     return NextResponse.json({
       subtitles: updatedSubtitles,
