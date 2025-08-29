@@ -1,5 +1,4 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { supabase } from '../supabase';
 import { supabaseAdmin } from '../supabase-admin';
 import {
   ChatSession,
@@ -65,11 +64,11 @@ export async function processUserMessage(
   let currentSession: ChatSession;
 
   if (sessionId) {
-    const existingSession = await getSessionById(supabase, sessionId);
+    const existingSession = await getSessionById(supabaseAdmin, sessionId);
     if (!existingSession) {
       console.warn(`Session ID ${sessionId} not found. Creating new session.`);
       currentSession = await createChatSession(
-        supabase,
+        supabaseAdmin,
         userId,
         sessionMetadata
       );
@@ -83,7 +82,7 @@ export async function processUserMessage(
             `Updating session ${currentSession.id} metadata from ${currentMetaString} to ${newMetaString}`
           );
           const updated = await updateSessionMetadata(
-            supabase,
+            supabaseAdmin,
             currentSession.id,
             sessionMetadata
           );
@@ -92,13 +91,13 @@ export async function processUserMessage(
       }
     }
   } else {
-    currentSession = await createChatSession(supabase, userId, sessionMetadata);
+    currentSession = await createChatSession(supabaseAdmin, userId, sessionMetadata);
   }
 
   const currentSessionId = currentSession.id;
 
   const historyMessages = await getMessagesForSession(
-    supabase,
+    supabaseAdmin,
     currentSessionId,
     20
   );
@@ -354,11 +353,11 @@ export async function processUserMessage(
     rawAssistantReply = `Error communicating with AI: ${error.message}`;
   }
 
-  await addMessageToSession(supabase, currentSessionId, {
+  await addMessageToSession(supabaseAdmin, currentSessionId, {
     role: 'user',
     content: userInput,
   });
-  await addMessageToSession(supabase, currentSessionId, {
+  await addMessageToSession(supabaseAdmin, currentSessionId, {
     role: 'assistant',
     content: rawAssistantReply,
   });
