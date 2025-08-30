@@ -82,7 +82,6 @@ export async function POST(request: Request) {
     }
 
     if (params.categoryIds && params.categoryIds.length > 0) {
-      // Note: This would need to be handled in the database function for better performance
       // For now, this is a placeholder
     }
 

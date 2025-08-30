@@ -7,6 +7,7 @@ import { Mic, StopCircle, Copy, X, Maximize2, Minimize2, Send, Loader2 } from 'l
 import { cn } from '@/lib/utils/cn';
 import { Button } from '../ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useVoiceInput } from '@/lib/hooks/useVoiceInput';
 
 interface ChatMessage {
   id: string;
@@ -43,75 +44,26 @@ export function Chatbot({
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isListening, setIsListening] = useState(false);
-  const [recognitionLang, setRecognitionLang] = useState<'zh-TW' | 'en-US'>('zh-TW');
   const [isExpanded, setIsExpanded] = useState(false);
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
 
-  const speechRecognitionRef = useRef<any | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const voiceInput = useVoiceInput(
+    (transcript) => {
+      setUserInput(prev => prev + transcript + ' ');
+    },
+    (voiceError) => {
+      setError(voiceError);
+    }
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(scrollToBottom, [messages, isLoading]);
-
-  const handleToggleRecognitionLang = () => {
-    setRecognitionLang(prevLang => (prevLang === 'zh-TW' ? 'en-US' : 'zh-TW'));
-  };
-
-  const handleToggleListening = () => {
-    const SpeechRecognitionAPI =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognitionAPI) {
-      setError('Voice recognition is not supported in this browser.');
-      return;
-    }
-    if (isListening && speechRecognitionRef.current) {
-      speechRecognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      const recognition = new SpeechRecognitionAPI();
-      recognition.lang = recognitionLang;
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        setIsListening(true);
-        setError(null);
-      };
-
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setUserInput(prevInput => prevInput + transcript);
-      };
-
-      recognition.onerror = (event: any) => {
-        let errorMessage = 'Error occurred during speech recognition.';
-        if (event.error === 'no-speech')
-          errorMessage = 'No speech was detected.';
-        else if (event.error === 'audio-capture')
-          errorMessage = 'Cannot capture audio.';
-        else if (event.error === 'not-allowed')
-          errorMessage = 'Permission to use microphone was denied.';
-        setError(errorMessage);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => setIsListening(false);
-
-      speechRecognitionRef.current = recognition;
-      try {
-        recognition.start();
-      } catch (err) {
-        setError('Failed to start speech recognition.');
-        setIsListening(false);
-      }
-    }
-  };
 
   useEffect(() => {
     if (!sessionId) return;
@@ -128,15 +80,6 @@ export function Chatbot({
     fetchHistory();
   }, [sessionId]);
 
-  useEffect(() => {
-    return () => {
-      if (speechRecognitionRef.current) {
-        speechRecognitionRef.current.abort();
-        speechRecognitionRef.current = null;
-        setIsListening(false);
-      }
-    };
-  }, []);
 
   const handleCopy = (content: string, id: string) => {
     navigator.clipboard.writeText(content);
@@ -347,9 +290,9 @@ export function Chatbot({
             </div>
 
             {/* Error message */}
-            {error && (
+            {(error || voiceInput.error) && (
               <div className="mx-4 mb-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                {error}
+                {error || voiceInput.error}
               </div>
             )}
 
@@ -362,21 +305,21 @@ export function Chatbot({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={handleToggleRecognitionLang}
-                disabled={isLoading || isListening}
+                onClick={voiceInput.toggleLanguage}
+                disabled={isLoading || voiceInput.isListening}
                 className="hidden sm:flex"
               >
-                {recognitionLang === 'zh-TW' ? 'EN' : '中'}
+                {voiceInput.currentLang === 'zh-TW' ? 'EN' : '中'}
               </Button>
               
               <Button
                 type="button"
-                variant={isListening ? 'destructive' : 'ghost'}
+                variant={voiceInput.isListening ? 'destructive' : 'ghost'}
                 size="icon"
-                onClick={handleToggleListening}
-                disabled={isLoading && !isListening}
+                onClick={voiceInput.isListening ? voiceInput.stopListening : voiceInput.startListening}
+                disabled={isLoading && !voiceInput.isListening}
               >
-                {isListening ? <StopCircle className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                {voiceInput.isListening ? <StopCircle className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
               </Button>
               
               <input
@@ -384,7 +327,7 @@ export function Chatbot({
                 type="text"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                placeholder={isListening ? 'Listening...' : 'Type your message...'}
+                placeholder={voiceInput.isListening ? 'Listening...' : 'Type your message...'}
                 disabled={isLoading}
                 className="flex-1 bg-background border border-input rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
               />
