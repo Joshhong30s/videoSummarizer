@@ -13,7 +13,8 @@ export const YOUTUBE_DOMAINS = [
 export function isValidYoutubeUrl(urlString: string): boolean {
   try {
     const url = new URL(urlString);
-    return YOUTUBE_DOMAINS.some(domain => url.hostname.includes(domain));
+    return (url.protocol === 'http:' || url.protocol === 'https:') &&
+           YOUTUBE_DOMAINS.some(domain => url.hostname === domain);
   } catch {
     return false;
   }
@@ -28,14 +29,16 @@ export function extractVideoId(urlString: string): string | null {
   try {
     const url = new URL(urlString);
 
-    if (url.hostname.includes('youtu.be')) {
+    if (url.hostname === 'youtu.be') {
       const id = url.pathname.slice(1);
       return id || null;
     }
 
-    const videoId = url.searchParams.get('v');
-    if (videoId) {
-      return videoId;
+    if (YOUTUBE_DOMAINS.some(domain => url.hostname === domain)) {
+      const videoId = url.searchParams.get('v');
+      if (videoId) {
+        return videoId;
+      }
     }
 
     return null;
