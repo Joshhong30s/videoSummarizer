@@ -7,7 +7,8 @@ import { Mic, StopCircle, Copy, X, Maximize2, Minimize2, Send, Loader2 } from 'l
 import { cn } from '@/lib/utils/cn';
 import { Button } from '../ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useVoiceInput } from '@/lib/hooks/useVoiceInput';
+import { useEnhancedVoiceInput } from '@/lib/hooks/useEnhancedVoiceInput';
+import { VoiceVisualizer } from '@/app/components/ui/voice-visualizer';
 
 interface ChatMessage {
   id: string;
@@ -50,12 +51,24 @@ export function Chatbot({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const voiceInput = useVoiceInput(
-    (transcript) => {
-      setUserInput(prev => prev + transcript + ' ');
+  const voiceInput = useEnhancedVoiceInput(
+    (transcript, isFinal) => {
+      if (isFinal) {
+        // 最終結果，直接設置
+        setUserInput(transcript);
+      } else {
+        // 即時預覽，不要直接修改輸入框
+        // 讓用戶看到即時識別但不干擾編輯
+      }
     },
     (voiceError) => {
       setError(voiceError);
+    },
+    {
+      pauseThreshold: 2000,    // 2秒停頓後送出
+      timeoutDuration: 30000,  // 30秒超時
+      showInterimResults: true,
+      autoDetectLanguage: true,
     }
   );
 
@@ -312,25 +325,65 @@ export function Chatbot({
                 {voiceInput.currentLang === 'zh-TW' ? 'EN' : '中'}
               </Button>
               
-              <Button
-                type="button"
-                variant={voiceInput.isListening ? 'destructive' : 'ghost'}
-                size="icon"
-                onClick={voiceInput.isListening ? voiceInput.stopListening : voiceInput.startListening}
-                disabled={isLoading && !voiceInput.isListening}
-              >
-                {voiceInput.isListening ? <StopCircle className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-              </Button>
+              <div className="relative">
+                <Button
+                  type="button"
+                  variant={voiceInput.isListening ? 'destructive' : 'ghost'}
+                  size="icon"
+                  onClick={voiceInput.isListening ? voiceInput.stopListening : voiceInput.startListening}
+                  disabled={isLoading && !voiceInput.isListening}
+                  className="relative"
+                >
+                  <VoiceVisualizer
+                    isListening={voiceInput.isListening}
+                    audioLevel={voiceInput.audioLevel}
+                    isSpeaking={voiceInput.isSpeaking}
+                    size="sm"
+                    className="absolute inset-0"
+                  />
+                  {voiceInput.isListening ? (
+                    <StopCircle className="h-4 w-4 relative z-10" />
+                  ) : (
+                    <Mic className="h-4 w-4 relative z-10" />
+                  )}
+                </Button>
+              </div>
               
-              <input
-                ref={inputRef}
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                placeholder={voiceInput.isListening ? 'Listening...' : 'Type your message...'}
-                disabled={isLoading}
-                className="flex-1 bg-background border border-input rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
-              />
+              <div className="relative flex-1">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  placeholder={
+                    voiceInput.isListening 
+                      ? voiceInput.isSpeaking 
+                        ? 'Listening...' 
+                        : 'Speak now...' 
+                      : 'Type your message...'
+                  }
+                  disabled={isLoading}
+                  className="w-full bg-background border border-input rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
+                />
+                
+                {/* 即時語音識別預覽 */}
+                {voiceInput.isListening && (voiceInput.finalTranscript || voiceInput.interimTranscript) && (
+                  <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-muted/80 backdrop-blur-sm border border-border rounded-lg text-xs z-50">
+                    {voiceInput.finalTranscript && (
+                      <span className="text-foreground">
+                        {voiceInput.finalTranscript}
+                      </span>
+                    )}
+                    {voiceInput.interimTranscript && (
+                      <span className="text-muted-foreground italic">
+                        {voiceInput.finalTranscript ? ' ' : ''}
+                        {voiceInput.interimTranscript}
+                        <span className="animate-pulse">|</span>
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
               
               <Button
                 type="submit"

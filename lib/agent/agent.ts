@@ -55,7 +55,6 @@ export async function processUserMessage(
   sessionMetadata?: Record<string, any>
 ): Promise<AgentResponse> {
   if (!GEMINI_API_KEY) {
-    console.error('GOOGLESTUDIO_API_KEY is not set in environment variables.');
     throw new Error(
       'GOOGLESTUDIO_API_KEY is not set in environment variables.'
     );
@@ -66,7 +65,6 @@ export async function processUserMessage(
   if (sessionId) {
     const existingSession = await getSessionById(supabaseAdmin, sessionId);
     if (!existingSession) {
-      console.warn(`Session ID ${sessionId} not found. Creating new session.`);
       currentSession = await createChatSession(
         supabaseAdmin,
         userId,
@@ -78,9 +76,6 @@ export async function processUserMessage(
         const currentMetaString = JSON.stringify(currentSession.metadata || {});
         const newMetaString = JSON.stringify(sessionMetadata);
         if (currentMetaString !== newMetaString) {
-          console.log(
-            `Updating session ${currentSession.id} metadata from ${currentMetaString} to ${newMetaString}`
-          );
           const updated = await updateSessionMetadata(
             supabaseAdmin,
             currentSession.id,
@@ -91,7 +86,11 @@ export async function processUserMessage(
       }
     }
   } else {
-    currentSession = await createChatSession(supabaseAdmin, userId, sessionMetadata);
+    currentSession = await createChatSession(
+      supabaseAdmin,
+      userId,
+      sessionMetadata
+    );
   }
 
   const currentSessionId = currentSession.id;
@@ -113,9 +112,6 @@ export async function processUserMessage(
   const currentVideoId = currentSession.metadata?.videoId as string | undefined;
 
   if (currentVideoId) {
-    console.log(
-      `Found videoId in current session: ${currentVideoId}. Fetching video details...`
-    );
     let videoTitle: string | null = null;
     let videoSummaryText: string | null = null;
     let fullSubtitlesText: string | null = null;
@@ -125,10 +121,9 @@ export async function processUserMessage(
         .select('title')
         .eq('id', currentVideoId)
         .maybeSingle();
-      if (videoInfoError)
-        console.error(
-          `Error fetching title for video ${currentVideoId}: ${videoInfoError.message}`
-        );
+      if (videoInfoError) {
+        `Error fetching title for video ${currentVideoId}: ${videoInfoError.message}`;
+      }
       if (videoInfo) videoTitle = videoInfo.title;
       else
         console.warn(
@@ -147,24 +142,19 @@ export async function processUserMessage(
       else if (summaryResults && summaryResults.length > 0) {
         const summaryData = summaryResults[0];
         videoSummaryText = summaryData.en_summary || summaryData.zh_summary;
-        if (videoSummaryText)
-          console.log(
-            `Found summary for ${currentVideoId}. Used: ${summaryData.en_summary ? 'English' : 'Chinese'}.`
-          );
+        if (videoSummaryText) {
+        }
         if (summaryData.subtitles && Array.isArray(summaryData.subtitles)) {
           fullSubtitlesText = summaryData.subtitles
             .map((sub: any) => sub.text)
             .join(' ');
           if (!fullSubtitlesText.trim()) fullSubtitlesText = null;
-          else
-            console.log(
-              `Extracted full subtitles text for ${currentVideoId} (length: ${fullSubtitlesText.length})`
-            );
+          else {
+          }
         }
-      } else
-        console.log(
-          `No summary/subtitles found for video ${currentVideoId} in 'summaries' table.`
-        );
+      } else {
+        `No summary/subtitles found for video ${currentVideoId} in 'summaries' table.`;
+      }
       if (videoTitle) {
         let context = `The user is asking about the video titled "${videoTitle}".`;
         if (videoSummaryText)
@@ -174,10 +164,8 @@ export async function processUserMessage(
         if (!videoSummaryText && !fullSubtitlesText)
           context += `\nNo detailed summary or subtitles are available for this video.`;
         videoContextText = context;
-      } else
-        console.warn(
-          `Could not form video context for ${currentVideoId} as title was not found.`
-        );
+      } else {
+      }
     } catch (e: any) {
       console.error(
         `Unexpected error during video context fetching for ${currentVideoId}: ${e.message}`,
@@ -227,11 +215,6 @@ export async function processUserMessage(
     },
   };
 
-  console.log(
-    'Request body for Gemini API:',
-    JSON.stringify(requestBody, null, 2)
-  );
-
   let rawAssistantReply =
     "Sorry, I couldn't process that response from the AI.";
   let callSuccess = false;
@@ -248,15 +231,7 @@ export async function processUserMessage(
     if (response.ok) {
       try {
         rawResponseText = await response.text();
-        console.log(
-          'Raw Gemini API Success Response Text (Status 200):',
-          rawResponseText
-        );
         const responseData = JSON.parse(rawResponseText);
-        console.log(
-          'Gemini API Success Response (Parsed JSON):',
-          JSON.stringify(responseData, null, 2)
-        );
 
         if (responseData.candidates && responseData.candidates.length > 0) {
           const candidate = responseData.candidates[0];
@@ -274,10 +249,6 @@ export async function processUserMessage(
             candidate.finishReason !== 'STOP'
           ) {
             rawAssistantReply = `AI model finished with reason: ${candidate.finishReason}. No content generated.`;
-            console.warn(
-              `Gemini candidate finished with reason: ${candidate.finishReason}`,
-              candidate
-            );
           } else {
             console.warn(
               'Gemini candidate had no content parts or empty content.',
@@ -294,22 +265,10 @@ export async function processUserMessage(
             responseData.promptFeedback
           );
         } else {
-          console.warn(
-            'Gemini API response did not contain candidates or promptFeedback.',
-            responseData
-          );
           rawAssistantReply =
             'Received an unexpected response structure from the AI (200 OK).';
         }
       } catch (error: any) {
-        console.error(
-          'Error processing Gemini API success response (status 200):',
-          error
-        );
-        console.error(
-          'Raw response text that caused error (if available):',
-          rawResponseText
-        );
         rawAssistantReply = `Error processing AI response: ${error.message}. Raw response snippet: ${rawResponseText.substring(0, 200)}`;
       }
     } else {
@@ -326,23 +285,8 @@ export async function processUserMessage(
           }
         } catch (parseError) {
           if (rawResponseText) errorResponseMessage = rawResponseText;
-          console.warn(
-            'Failed to parse Gemini error response as JSON, using raw text if available.',
-            parseError
-          );
         }
-      } catch (textError) {
-        console.error(
-          'Failed to read error response text from Gemini API:',
-          textError
-        );
-      }
-      console.error(
-        'Gemini API Error Status:',
-        response.status,
-        'Final Error Message:',
-        errorResponseMessage
-      );
+      } catch (textError) {}
       throw new Error(errorResponseMessage);
     }
   } catch (error: any) {
