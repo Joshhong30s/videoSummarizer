@@ -3,12 +3,20 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Mic, StopCircle, Copy, X, Maximize2, Minimize2, Send, Loader2 } from 'lucide-react';
+import {
+  Mic,
+  StopCircle,
+  Copy,
+  X,
+  Maximize2,
+  Minimize2,
+  Send,
+  Loader2,
+} from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { Button } from '../ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEnhancedVoiceInput } from '@/lib/hooks/useEnhancedVoiceInput';
-import { VoiceVisualizer } from '@/app/components/ui/voice-visualizer';
 
 interface ChatMessage {
   id: string;
@@ -40,7 +48,9 @@ export function Chatbot({
   initialSessionId,
   contextMetadata,
 }: ChatbotProps) {
-  const [sessionId, setSessionId] = useState<string | undefined>(initialSessionId);
+  const [sessionId, setSessionId] = useState<string | undefined>(
+    initialSessionId
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -61,12 +71,12 @@ export function Chatbot({
         // 讓用戶看到即時識別但不干擾編輯
       }
     },
-    (voiceError) => {
+    voiceError => {
       setError(voiceError);
     },
     {
-      pauseThreshold: 2000,    // 2秒停頓後送出
-      timeoutDuration: 30000,  // 30秒超時
+      pauseThreshold: 2000, // 2秒停頓後送出
+      timeoutDuration: 30000, // 30秒超時
       showInterimResults: true,
       autoDetectLanguage: true,
     }
@@ -92,7 +102,6 @@ export function Chatbot({
     }
     fetchHistory();
   }, [sessionId]);
-
 
   const handleCopy = (content: string, id: string) => {
     navigator.clipboard.writeText(content);
@@ -164,14 +173,14 @@ export function Chatbot({
     const d = new Date(iso);
     const now = new Date();
     const isToday = d.toDateString() === now.toDateString();
-    
+
     if (isToday) {
       return d.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
       });
     }
-    
+
     return d.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -192,7 +201,7 @@ export function Chatbot({
             onClick={onClose}
             className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-40 lg:hidden"
           />
-          
+
           <motion.div
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -217,13 +226,13 @@ export function Chatbot({
                   onClick={() => setIsExpanded(!isExpanded)}
                   className="hidden lg:flex"
                 >
-                  {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                  {isExpanded ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                >
+                <Button variant="ghost" size="icon" onClick={onClose}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -232,7 +241,7 @@ export function Chatbot({
             {/* Messages container */}
             <div className="flex-1 overflow-y-auto px-4 py-4">
               <div className="flex flex-col gap-4">
-                {messages.map((msg) => (
+                {messages.map(msg => (
                   <motion.div
                     key={msg.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -261,16 +270,20 @@ export function Chatbot({
                           {msg.content}
                         </p>
                       )}
-                      
+
                       {msg.createdAt && (
-                        <span className={cn(
-                          'text-xs mt-1 block',
-                          msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                        )}>
+                        <span
+                          className={cn(
+                            'text-xs mt-1 block',
+                            msg.role === 'user'
+                              ? 'text-primary-foreground/70'
+                              : 'text-muted-foreground'
+                          )}
+                        >
                           {formatTime(msg.createdAt)}
                         </span>
                       )}
-                      
+
                       {msg.role === 'assistant' && (
                         <Button
                           variant="ghost"
@@ -279,13 +292,15 @@ export function Chatbot({
                           className="absolute -bottom-8 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <Copy className="h-3 w-3" />
-                          {copiedMsgId === msg.id && <span className="ml-1 text-xs">Copied!</span>}
+                          {copiedMsgId === msg.id && (
+                            <span className="ml-1 text-xs">Copied!</span>
+                          )}
                         </Button>
                       )}
                     </div>
                   </motion.div>
                 ))}
-                
+
                 {isLoading && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -297,7 +312,7 @@ export function Chatbot({
                     </div>
                   </motion.div>
                 )}
-                
+
                 <div ref={messagesEndRef} />
               </div>
             </div>
@@ -324,67 +339,127 @@ export function Chatbot({
               >
                 {voiceInput.currentLang === 'zh-TW' ? 'EN' : '中'}
               </Button>
-              
-              <div className="relative">
-                <Button
-                  type="button"
-                  variant={voiceInput.isListening ? 'destructive' : 'ghost'}
-                  size="icon"
-                  onClick={voiceInput.isListening ? voiceInput.stopListening : voiceInput.startListening}
-                  disabled={isLoading && !voiceInput.isListening}
-                  className="relative"
-                >
-                  <VoiceVisualizer
-                    isListening={voiceInput.isListening}
-                    audioLevel={voiceInput.audioLevel}
-                    isSpeaking={voiceInput.isSpeaking}
-                    size="sm"
-                    className="absolute inset-0"
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={
+                  voiceInput.isListening
+                    ? voiceInput.stopListening
+                    : voiceInput.startListening
+                }
+                disabled={isLoading && !voiceInput.isListening}
+                className={cn(
+                  'relative transition-colors',
+                  voiceInput.isListening
+                    ? voiceInput.isSpeaking
+                      ? 'bg-green-100 hover:bg-green-200 border-green-400'
+                      : 'bg-blue-100 hover:bg-blue-200 border-blue-400'
+                    : 'hover:bg-muted'
+                )}
+              >
+                {voiceInput.isListening && (
+                  <div className="absolute inset-1 rounded-full flex items-center justify-center">
+                    <div className="flex items-end justify-center space-x-0.5">
+                      {[1, 2, 3].map(bar => (
+                        <motion.div
+                          key={bar}
+                          className={cn(
+                            'w-0.5 rounded-full',
+                            voiceInput.isSpeaking
+                              ? 'bg-green-500'
+                              : 'bg-blue-500'
+                          )}
+                          animate={{
+                            height: voiceInput.isSpeaking
+                              ? [2, 8, 4, 6, 3][bar] *
+                                (voiceInput.audioLevel / 100 + 0.3)
+                              : [2, 3, 2][bar],
+                          }}
+                          transition={{
+                            duration: 0.3,
+                            repeat: voiceInput.isListening ? Infinity : 0,
+                            repeatType: 'reverse',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {voiceInput.isListening ? (
+                  <StopCircle
+                    className={cn(
+                      'h-4 w-4 relative z-10',
+                      voiceInput.isSpeaking ? 'text-green-600' : 'text-blue-600'
+                    )}
                   />
-                  {voiceInput.isListening ? (
-                    <StopCircle className="h-4 w-4 relative z-10" />
-                  ) : (
-                    <Mic className="h-4 w-4 relative z-10" />
-                  )}
-                </Button>
-              </div>
-              
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+
+                {voiceInput.isListening && (
+                  <div
+                    className={cn(
+                      'absolute -top-1 -right-1 w-2 h-2 rounded-full',
+                      voiceInput.isSpeaking ? 'bg-green-400' : 'bg-blue-400'
+                    )}
+                  >
+                    <motion.div
+                      className="absolute inset-0 rounded-full bg-current"
+                      animate={{
+                        scale: [1, 1.5, 1],
+                        opacity: [1, 0.3, 1],
+                      }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                      }}
+                    />
+                  </div>
+                )}
+              </Button>
+
               <div className="relative flex-1">
                 <input
                   ref={inputRef}
                   type="text"
                   value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
+                  onChange={e => setUserInput(e.target.value)}
                   placeholder={
-                    voiceInput.isListening 
-                      ? voiceInput.isSpeaking 
-                        ? 'Listening...' 
-                        : 'Speak now...' 
+                    voiceInput.isListening
+                      ? voiceInput.isSpeaking
+                        ? 'Listening...'
+                        : 'Speak now...'
                       : 'Type your message...'
                   }
                   disabled={isLoading}
                   className="w-full bg-background border border-input rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
                 />
-                
+
                 {/* 即時語音識別預覽 */}
-                {voiceInput.isListening && (voiceInput.finalTranscript || voiceInput.interimTranscript) && (
-                  <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-muted/80 backdrop-blur-sm border border-border rounded-lg text-xs z-50">
-                    {voiceInput.finalTranscript && (
-                      <span className="text-foreground">
-                        {voiceInput.finalTranscript}
-                      </span>
-                    )}
-                    {voiceInput.interimTranscript && (
-                      <span className="text-muted-foreground italic">
-                        {voiceInput.finalTranscript ? ' ' : ''}
-                        {voiceInput.interimTranscript}
-                        <span className="animate-pulse">|</span>
-                      </span>
-                    )}
-                  </div>
-                )}
+                {voiceInput.isListening &&
+                  (voiceInput.finalTranscript ||
+                    voiceInput.interimTranscript) && (
+                    <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-muted/80 backdrop-blur-sm border border-border rounded-lg text-xs z-50">
+                      {voiceInput.finalTranscript && (
+                        <span className="text-foreground">
+                          {voiceInput.finalTranscript}
+                        </span>
+                      )}
+                      {voiceInput.interimTranscript && (
+                        <span className="text-muted-foreground italic">
+                          {voiceInput.finalTranscript ? ' ' : ''}
+                          {voiceInput.interimTranscript}
+                          <span className="animate-pulse">|</span>
+                        </span>
+                      )}
+                    </div>
+                  )}
               </div>
-              
+
               <Button
                 type="submit"
                 size="icon"
