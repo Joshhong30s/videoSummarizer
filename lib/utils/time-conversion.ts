@@ -7,22 +7,26 @@ export function minutesToSeconds(minutes: number): number {
 }
 
 export function formatTimeToMinutes(time: string): number {
-  const [hours, minutes, seconds] = time.split(':').map(Number);
-  if (hours && minutes && seconds) {
+  const parts = time.split(':').map(Number);
+  if (parts.length === 3) {
+    const [hours, minutes, seconds] = parts;
     return hours * 60 + minutes + seconds / 60;
   }
-  if (minutes && seconds) {
+  if (parts.length === 2) {
+    const [minutes, seconds] = parts;
     return minutes + seconds / 60;
   }
   return 0;
 }
 
 export function formatTimeToSeconds(time: string): number {
-  const [hours, minutes, seconds] = time.split(':').map(Number);
-  if (hours && minutes && seconds) {
+  const parts = time.split(':').map(Number);
+  if (parts.length === 3) {
+    const [hours, minutes, seconds] = parts;
     return hours * 60 * 60 + minutes * 60 + seconds;
   }
-  if (minutes && seconds) {
+  if (parts.length === 2) {
+    const [minutes, seconds] = parts;
     return minutes * 60 + seconds;
   }
   return 0;

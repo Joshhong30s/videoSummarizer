@@ -9,7 +9,8 @@ export function getVideoId(url: string): string | null {
   try {
     const urlObj = new URL(url);
     if (urlObj.hostname === 'youtu.be') {
-      return urlObj.pathname.slice(1);
+      const id = urlObj.pathname.slice(1);
+      return id || null;
     }
 
     if (urlObj.hostname.includes('youtube.com')) {
