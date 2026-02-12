@@ -18,6 +18,39 @@ const fetchData = async function fetchData(url: string) {
   return data;
 };
 
+const withCaptionFormat = (url: string, format: string) => {
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set('fmt', format);
+    return parsed.toString();
+  } catch {
+    if (url.includes('fmt=')) {
+      return url.replace(/fmt=[^&]+/, `fmt=${format}`);
+    }
+    return `${url}&fmt=${format}`;
+  }
+};
+
+const parseTranscriptXml = (transcript: string) =>
+  transcript
+    .replace('<?xml version="1.0" encoding="utf-8" ?><transcript>', '')
+    .replace('</transcript>', '')
+    .split('</text>')
+    .filter(Boolean)
+    .map((line: string) => {
+      const start = /start="([\d.]+)"/.exec(line)?.[1];
+      const dur = /dur="([\d.]+)"/.exec(line)?.[1];
+      const htmlText = line.replace(/<text.+?>/, '').replace(/<\/?[^>]+>/g, '');
+      const decodedText = he.decode(htmlText);
+      const text = striptags(decodedText);
+
+      if (!start || !dur) {
+        throw new Error('Failed to parse subtitle line.');
+      }
+
+      return { start, dur, text };
+    });
+
 export type SubtitleLine = {
   start: string;
   dur: string;
@@ -62,25 +95,14 @@ export async function getSubtitles({
     throw new Error(`Could not find ${type} captions for ${videoID}`);
   }
 
-  const transcript = await fetchData(subtitle.baseUrl);
-  const lines = transcript
-    .replace('<?xml version="1.0" encoding="utf-8" ?><transcript>', '')
-    .replace('</transcript>', '')
-    .split('</text>')
-    .filter(Boolean)
-    .map((line: string) => {
-      const start = /start="([\d.]+)"/.exec(line)?.[1];
-      const dur = /dur="([\d.]+)"/.exec(line)?.[1];
-      const htmlText = line.replace(/<text.+?>/, '').replace(/<\/?[^>]+>/g, '');
-      const decodedText = he.decode(htmlText);
-      const text = striptags(decodedText);
+  const fmtBaseUrl = withCaptionFormat(subtitle.baseUrl, 'srv1');
+  let transcript = await fetchData(fmtBaseUrl);
+  let lines = parseTranscriptXml(transcript);
 
-      if (!start || !dur) {
-        throw new Error('Failed to parse subtitle line.');
-      }
-
-      return { start, dur, text };
-    });
+  if (!lines.length && fmtBaseUrl !== subtitle.baseUrl) {
+    transcript = await fetchData(subtitle.baseUrl);
+    lines = parseTranscriptXml(transcript);
+  }
 
   return lines;
 }
