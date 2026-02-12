@@ -167,27 +167,48 @@ export async function getSubtitles({
 }): Promise<SubtitleLine[]> {
   const data = await fetchData(`https://youtube.com/watch?v=${videoID}`);
 
-  if (!data.includes('captionTracks')) {
-    throw new Error(`Could not find captions for video: ${videoID}`);
-  }
+  const extractCaptionTracks = () => {
+    if (!data.includes('captionTracks')) return null;
+    const regex = /"captionTracks":(\[.*?\])/;
+    const matchResult = regex.exec(data);
+    if (matchResult) {
+      try {
+        const { captionTracks } = JSON.parse(`{${matchResult[0]}}`);
+        return captionTracks;
+      } catch {
+        return null;
+      }
+    }
 
-  const regex = /"captionTracks":(\[.*?\])/;
-  const matchResult = regex.exec(data);
-  if (!matchResult) {
-    throw new Error(`Could not extract captionTracks`);
-  }
+    const playerMatch = data.match(/ytInitialPlayerResponse\s*=\s*(\{.+?\});/s);
+    if (playerMatch?.[1]) {
+      try {
+        const player = JSON.parse(playerMatch[1]);
+        return (
+          player?.captions?.playerCaptionsTracklistRenderer?.captionTracks ||
+          null
+        );
+      } catch {
+        return null;
+      }
+    }
 
-  const { captionTracks } = JSON.parse(`{${matchResult[0]}}`);
+    return null;
+  };
+
+  const captionTracks = extractCaptionTracks() || [];
 
   let subtitle;
-  if (type === 'manual') {
-    subtitle = find(captionTracks, { vssId: `.${lang}` });
-  } else if (type === 'asr') {
-    subtitle = find(captionTracks, { vssId: `a.${lang}` });
-  } else {
-    subtitle =
-      find(captionTracks, { vssId: `a.${lang}` }) ||
-      find(captionTracks, { vssId: `.${lang}` });
+  if (captionTracks.length) {
+    if (type === 'manual') {
+      subtitle = find(captionTracks, { vssId: `.${lang}` });
+    } else if (type === 'asr') {
+      subtitle = find(captionTracks, { vssId: `a.${lang}` });
+    } else {
+      subtitle =
+        find(captionTracks, { vssId: `a.${lang}` }) ||
+        find(captionTracks, { vssId: `.${lang}` });
+    }
   }
 
   let lines: SubtitleLine[] = [];
@@ -219,12 +240,10 @@ export async function getSubtitles({
       tracks.find(t => t.langCode?.startsWith('en')) ||
       tracks[0];
 
-    if (!preferred) {
-      throw new Error(`Could not find ${type} captions for ${videoID}`);
+    if (preferred) {
+      const vtt = await fetchVttFromTimedText(videoID, preferred);
+      lines = parseVttToLines(vtt);
     }
-
-    const vtt = await fetchVttFromTimedText(videoID, preferred);
-    lines = parseVttToLines(vtt);
   }
 
   if (!lines.length) {
