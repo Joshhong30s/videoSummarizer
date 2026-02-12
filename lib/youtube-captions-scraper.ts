@@ -197,6 +197,7 @@ export async function getSubtitles({
   };
 
   const captionTracks = extractCaptionTracks() || [];
+  console.log('[captions] captionTracks length', captionTracks.length);
 
   let subtitle;
   if (captionTracks.length) {
@@ -214,27 +215,33 @@ export async function getSubtitles({
   let lines: SubtitleLine[] = [];
 
   if (subtitle?.baseUrl) {
+    console.log('[captions] using baseUrl', subtitle.baseUrl);
     const fmtBaseUrl = withCaptionFormat(subtitle.baseUrl, 'srv1');
     let transcript = await fetchData(fmtBaseUrl);
+    console.log('[captions] baseUrl fmt=srv1 length', transcript.length);
 
     if (transcript.trim().startsWith('WEBVTT')) {
       lines = parseVttToLines(transcript);
     } else {
       lines = parseTranscriptXml(transcript);
     }
+    console.log('[captions] lines after srv1 parse', lines.length);
 
     if (!lines.length && fmtBaseUrl !== subtitle.baseUrl) {
       transcript = await fetchData(subtitle.baseUrl);
+      console.log('[captions] baseUrl raw length', transcript.length);
       if (transcript.trim().startsWith('WEBVTT')) {
         lines = parseVttToLines(transcript);
       } else {
         lines = parseTranscriptXml(transcript);
       }
+      console.log('[captions] lines after raw parse', lines.length);
     }
   }
 
   if (!lines.length) {
     const tracks = await fetchTimedTextTrackList(videoID);
+    console.log('[captions] timedtext tracks', tracks);
     const preferred =
       tracks.find(t => t.langCode?.startsWith(lang)) ||
       tracks.find(t => t.langCode?.startsWith('en')) ||
@@ -242,7 +249,9 @@ export async function getSubtitles({
 
     if (preferred) {
       const vtt = await fetchVttFromTimedText(videoID, preferred);
+      console.log('[captions] timedtext vtt length', vtt.length);
       lines = parseVttToLines(vtt);
+      console.log('[captions] lines after timedtext', lines.length);
     }
   }
 
