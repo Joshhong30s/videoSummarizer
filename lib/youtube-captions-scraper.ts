@@ -4,6 +4,7 @@ import { find } from 'lodash';
 import striptags from 'striptags';
 
 const fetchData = async function fetchData(url: string) {
+  const cookie = process.env.YT_COOKIE;
   const { data } = await axios.get(url, {
     headers: {
       'User-Agent':
@@ -13,6 +14,7 @@ const fetchData = async function fetchData(url: string) {
         'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
       Referer: 'https://www.youtube.com',
       Origin: 'https://www.youtube.com',
+      ...(cookie ? { Cookie: cookie } : {}),
     },
   });
   return data;
