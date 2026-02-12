@@ -195,11 +195,20 @@ export async function getSubtitles({
   if (subtitle?.baseUrl) {
     const fmtBaseUrl = withCaptionFormat(subtitle.baseUrl, 'srv1');
     let transcript = await fetchData(fmtBaseUrl);
-    lines = parseTranscriptXml(transcript);
+
+    if (transcript.trim().startsWith('WEBVTT')) {
+      lines = parseVttToLines(transcript);
+    } else {
+      lines = parseTranscriptXml(transcript);
+    }
 
     if (!lines.length && fmtBaseUrl !== subtitle.baseUrl) {
       transcript = await fetchData(subtitle.baseUrl);
-      lines = parseTranscriptXml(transcript);
+      if (transcript.trim().startsWith('WEBVTT')) {
+        lines = parseVttToLines(transcript);
+      } else {
+        lines = parseTranscriptXml(transcript);
+      }
     }
   }
 
