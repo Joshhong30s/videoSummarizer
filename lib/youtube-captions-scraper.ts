@@ -5,6 +5,7 @@ import striptags from 'striptags';
 
 const fetchData = async function fetchData(url: string) {
   const cookie = process.env.YT_COOKIE;
+  console.log('[captions] cookie length', cookie?.length ?? 0);
   const { data } = await axios.get(url, {
     headers: {
       'User-Agent':
