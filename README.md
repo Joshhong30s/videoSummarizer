@@ -1,5 +1,7 @@
 ## 📘 [English](README.en.md) | 📙 [中文](README.zh.md)
 
+> ⚠️ **NOTICE**: YouTube API access is currently unavailable, so automatic subtitle fetching is disabled. We are working on a workaround.
+
 # YouTube Summarizer v2
 
 A compact and elegant personal YouTube video summarization and learning tool, supporting AI-generated summaries, subtitle translation, key point highlighting, and note-taking features.
